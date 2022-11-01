@@ -1,10 +1,12 @@
 
 # Init K8s cluster
+export DEBIAN_FRONTEND=noninteractive
+
 # step 1
 echo "Step 1"
 echo "Download containerd and unpackage"
 sudo apt-get update
-sudo apt-get install gcc -y
+sudo apt-get install gcc -y #popup
 
 mkdir tmp
 cd tmp/
@@ -17,10 +19,11 @@ echo 'export GOPATH=$HOME/go' >> $HOME/.profile
 echo 'export PATH=GOBIN=$GOPATH/bin' >> $HOME/.profile
 echo 'export PATH=$GOROOT/bin:$GOBIN:$PATH' >> $HOME/.profile
 echo 'export PATH="/usr/bin:$PATH"' >> $HOME/.profile
+echo 'export PATH=$PATH:/usr/local/go/bin:$GOPATH/bin' >> $HOME/.profile
 source $HOME/.profile
 go version
 
-sudo apt install make -y
+sudo apt install make -y #popup
 wget https://github.com/containerd/containerd/releases/download/v1.3.6/containerd-1.3.6-linux-amd64.tar.gz
 mkdir containerd
 tar -xvf containerd-1.3.6-linux-amd64.tar.gz -C containerd
@@ -34,14 +37,16 @@ cd containerd-cri/
 go version
 go get github.com/containerd/cri/cmd/containerd
 make
-sudo make install
+sudo chown -R root:root /home/ubuntu/tmp/containerd-cri
+sudo apt install golang-go -y
+sudo make install # comment -> unsafe repo is owne dby someone else
 cd _output/
 sudo mv containerd /bin/
 
 #Configure containerd and create the containerd configuration file
 echo "Configure containerd and create the containerd configuration file"
-sudo mkdir /etc/containerd
-#sudo rm /etc/containerd/config.toml
+sudo mkdir /etc/containerd #already existsls /etc
+sudo rm /etc/containerd/config.toml
 sudo touch /etc/containerd/config.toml
 echo '[plugins]
   [plugins.cri.containerd]
@@ -53,6 +58,10 @@ echo '[plugins]
 
 # Install newest version of runc
 echo "Install newest version of runc"
+cd ..
+cd ..
+mkdir runc
+cd runc
 wget https://github.com/opencontainers/runc/releases/download/v1.0.0-rc92/runc.amd64
 whereis runc
 sudo mv runc.amd64 runc
@@ -94,14 +103,14 @@ echo "net.bridge.bridge-nf-call-iptables = 1" | sudo tee /etc/sysctl.conf >/dev/
 sudo -s
 sudo echo '1' > /proc/sys/net/ipv4/ip_forward
 exit
-sudo sysctl --system
+sudo sysctl --system #perhaps an error
 sudo modprobe overlay
 sudo modprobe br_netfilter
 
 # Step 4
 echo "Step 4"
 echo "Install kubernetes components"
-curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add #deprecated
 sudo apt-add-repository "deb http://apt.kubernetes.io/ kubernetes-xenial main" -y
 sudo apt-get install kubeadm=1.19.0-00 kubelet=1.19.0-00 kubectl=1.19.0-00 -y
 whereis kubeadm
@@ -112,7 +121,10 @@ echo "Step 5"
 echo "Kubernetes custom source code"
 #curl -L https://github.com/coreos/etcd/releases/download/v3.0.17/etcd-v3.0.17-linux-amd64.tar.gz -o etcd-v3.0.17-linux-amd64.tar.gz && tar xzvf etcd-v3.0.17-linux-amd64.tar.gz && sudo /bin/cp -f etcd-v3.0.17-linux-amd64/{etcd,etcdctl} /usr/bin && rm -rf etcd-v3.0.17-linux-amd64*
 cd ..
-cd containerd
+cd containerd #in tpm
+#sudo systemctl enable docker
+#sudo systemctl start docker
+
 # Get kubernetes source code
 git clone https://github.com/vutuong/kubernetes.git
 
@@ -120,15 +132,25 @@ git clone https://github.com/vutuong/kubernetes.git
 git clone https://github.com/vutuong/kubernetes.git $GOPATH/src/k8s.io/kubernetes
 cd $GOPATH/src/k8s.io/kubernetes
 hack/install-etcd.sh
-export KUBERNETES_PROVIDER=local
-time make quick-release
-hack/local-up-cluster.sh
+export KUBERNETES_PROVIDER=local # errors
+
+# old golang version
+sudo apt-get --purge remove golang-go -y
+cd $HOME/tmp
+sudo tar -xzf go1.15.5.linux-amd64.tar.gz
+sudo rm -rf /usr/local/go
+sudo mv go /usr/local
+cd $GOPATH/src/k8s.io/kubernetes
+
+make # -> no errors
+# time make quick-release
+#hack/local-up-cluster.sh
 
 
 # Step 6
 echo "Step 6"
 echo "Replace kubelet with custom kubelet"
-cd ..
+cd $HOME/tmp
 git clone https://github.com/SSU-DCN/podmigration-operator.git
 cd podmigration-operator
 tar -vxf binaries.tar.bz2
