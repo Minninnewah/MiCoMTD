@@ -101,8 +101,10 @@ echo "Step 2"
 echo "Solve a few problems with containerd"
 echo "net.bridge.bridge-nf-call-iptables = 1" | sudo tee /etc/sysctl.conf >/dev/null
 sudo -s
+export DEBIAN_FRONTEND=noninteractive
 sudo echo '1' > /proc/sys/net/ipv4/ip_forward
 exit
+export DEBIAN_FRONTEND=noninteractive
 sudo sysctl --system #perhaps an error
 sudo modprobe overlay
 sudo modprobe br_netfilter
@@ -122,8 +124,8 @@ echo "Kubernetes custom source code"
 #curl -L https://github.com/coreos/etcd/releases/download/v3.0.17/etcd-v3.0.17-linux-amd64.tar.gz -o etcd-v3.0.17-linux-amd64.tar.gz && tar xzvf etcd-v3.0.17-linux-amd64.tar.gz && sudo /bin/cp -f etcd-v3.0.17-linux-amd64/{etcd,etcdctl} /usr/bin && rm -rf etcd-v3.0.17-linux-amd64*
 cd ..
 cd containerd #in tpm
-#sudo systemctl enable docker
-#sudo systemctl start docker
+sudo systemctl enable docker
+sudo systemctl start docker
 
 # Get kubernetes source code
 git clone https://github.com/vutuong/kubernetes.git
