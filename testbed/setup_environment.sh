@@ -1,7 +1,6 @@
-#!/bin/bash  
-# Bash script
-# Init K8s cluster
+#!/bin/bash
 
+# Init K8s cluster
 sudo apt-get remove docker docker-engine docker.io docker-ce docker-ce-cli -y
 # step 1
 echo "Step 1"
@@ -100,18 +99,10 @@ sudo systemctl restart containerd
 echo "Step 2"
 echo "Solve a few problems with containerd"
 echo "net.bridge.bridge-nf-call-iptables = 1" | sudo tee /etc/sysctl.conf >/dev/null
-sudo -s
+sudo -s << SCRIPT
 sudo echo '1' > /proc/sys/net/ipv4/ip_forward
 exit
-#sudo -u ubunutu -s
-echo 'export GOROOT=/usr/local/go' >> $HOME/.profile
-echo 'export GOPATH=$HOME/go' >> $HOME/.profile
-echo 'export PATH=GOBIN=$GOPATH/bin' >> $HOME/.profile
-echo 'export PATH=$GOROOT/bin:$GOBIN:$PATH' >> $HOME/.profile
-echo 'export PATH="/usr/bin:$PATH"' >> $HOME/.profile
-echo 'export PATH=$PATH:/usr/local/go/bin:$GOPATH/bin' >> $HOME/.profile
-source $HOME/.profile
-
+SCRIPT
 
 sudo sysctl --system #perhaps an error
 sudo modprobe overlay
