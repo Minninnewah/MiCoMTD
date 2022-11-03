@@ -1,12 +1,12 @@
 
 # Init K8s cluster
 export DEBIAN_FRONTEND=noninteractive
-
+sudo apt-get remove docker docker-engine docker.io docker-ce docker-ce-cli -y
 # step 1
 echo "Step 1"
 echo "Download containerd and unpackage"
 sudo apt-get update
-sudo apt-get install gcc -y #popup
+sudo DEBIAN_FRONTEND=noninteractive apt-get install gcc -y #popup
 
 mkdir tmp
 cd tmp/
@@ -23,7 +23,7 @@ echo 'export PATH=$PATH:/usr/local/go/bin:$GOPATH/bin' >> $HOME/.profile
 source $HOME/.profile
 go version
 
-sudo apt install make -y #popup
+sudo DEBIAN_FRONTEND=noninteractive apt install make -y #popup
 wget https://github.com/containerd/containerd/releases/download/v1.3.6/containerd-1.3.6-linux-amd64.tar.gz
 mkdir containerd
 tar -xvf containerd-1.3.6-linux-amd64.tar.gz -C containerd
@@ -38,7 +38,7 @@ go version
 go get github.com/containerd/cri/cmd/containerd
 make
 sudo chown -R root:root /home/ubuntu/tmp/containerd-cri
-sudo apt install golang-go -y
+sudo DEBIAN_FRONTEND=noninteractive apt install golang-go -y
 sudo make install # comment -> unsafe repo is owne dby someone else
 cd _output/
 sudo mv containerd /bin/
@@ -58,8 +58,7 @@ echo '[plugins]
 
 # Install newest version of runc
 echo "Install newest version of runc"
-cd ..
-cd ..
+cd $HOME/tmp
 mkdir runc
 cd runc
 wget https://github.com/opencontainers/runc/releases/download/v1.0.0-rc92/runc.amd64
@@ -101,10 +100,8 @@ echo "Step 2"
 echo "Solve a few problems with containerd"
 echo "net.bridge.bridge-nf-call-iptables = 1" | sudo tee /etc/sysctl.conf >/dev/null
 sudo -s
-export DEBIAN_FRONTEND=noninteractive
 sudo echo '1' > /proc/sys/net/ipv4/ip_forward
 exit
-export DEBIAN_FRONTEND=noninteractive
 sudo sysctl --system #perhaps an error
 sudo modprobe overlay
 sudo modprobe br_netfilter
@@ -114,7 +111,7 @@ echo "Step 4"
 echo "Install kubernetes components"
 curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add #deprecated
 sudo apt-add-repository "deb http://apt.kubernetes.io/ kubernetes-xenial main" -y
-sudo apt-get install kubeadm=1.19.0-00 kubelet=1.19.0-00 kubectl=1.19.0-00 -y
+sudo DEBIAN_FRONTEND=noninteractive apt-get install kubeadm=1.19.0-00 kubelet=1.19.0-00 kubectl=1.19.0-00 -y
 whereis kubeadm
 whereis kubelet
 
@@ -122,10 +119,8 @@ whereis kubelet
 echo "Step 5"
 echo "Kubernetes custom source code"
 #curl -L https://github.com/coreos/etcd/releases/download/v3.0.17/etcd-v3.0.17-linux-amd64.tar.gz -o etcd-v3.0.17-linux-amd64.tar.gz && tar xzvf etcd-v3.0.17-linux-amd64.tar.gz && sudo /bin/cp -f etcd-v3.0.17-linux-amd64/{etcd,etcdctl} /usr/bin && rm -rf etcd-v3.0.17-linux-amd64*
-cd ..
+cd $HOME/tmp
 cd containerd #in tpm
-sudo systemctl enable docker
-sudo systemctl start docker
 
 # Get kubernetes source code
 git clone https://github.com/vutuong/kubernetes.git
