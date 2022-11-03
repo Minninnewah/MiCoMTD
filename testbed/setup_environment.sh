@@ -103,7 +103,7 @@ sudo -s << SCRIPT
 sudo echo '1' > /proc/sys/net/ipv4/ip_forward
 exit
 SCRIPT
-
+echo $HOME
 sudo sysctl --system #perhaps an error
 sudo modprobe overlay
 sudo modprobe br_netfilter
