@@ -32,15 +32,23 @@ sudo mv containerd/bin/* /bin/
 
 #Replace containerrd-cri with version supporting CRIU
 echo "Replace the containerd-cri with interface extentions supporting CRIU"
-git clone https://github.com/vutuong/containerd-cri.git
-cd containerd-cri/
-go version
-go get github.com/containerd/cri/cmd/containerd
-make
-sudo chown -R root:root /home/ubuntu/tmp/containerd-cri
-sudo DEBIAN_FRONTEND=noninteractive apt install golang-go -y
-sudo make install # comment -> unsafe repo is owne dby someone else
-cd _output/
+#git clone https://github.com/vutuong/containerd-cri.git
+#cd containerd-cri/
+#go version
+#go get github.com/containerd/cri/cmd/containerd
+#make
+#sudo chown -R root:root /home/ubuntu/tmp/containerd-cri
+#sudo DEBIAN_FRONTEND=noninteractive apt install golang-go -y
+#sudo make install # comment -> unsafe repo is owne dby someone else
+#cd _output/
+#sudo mv containerd /bin/
+cd containerd/
+wget https://k8s-pod-migration.obs.eu-de.otc.t-systems.com/v2/containerd
+git clone https://github.com/SSU-DCN/podmigration-operator.git
+cd podmigration-operator
+tar -vxf binaries.tar.bz2
+cd custom-binaries/
+chmod +x containerd
 sudo mv containerd /bin/
 
 #Configure containerd and create the containerd configuration file
