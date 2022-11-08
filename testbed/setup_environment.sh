@@ -129,6 +129,20 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get install kubeadm=1.19.0-00 kubelet=1.
 whereis kubeadm
 whereis kubelet
 
+#Step 5
+cd $HOME/tmp
+git clone https://github.com/vutuong/kubernetes.git
+git clone https://github.com/SSU-DCN/podmigration-operator.git
+cd podmigration-operator
+tar -vxf binaries.tar.bz2
+cd custom-binaries
+
+chmod +x kubeadm kubelet
+sudo mv kubeadm kubelet /usr/bin/
+sudo systemctl daemon-reload
+sudo systemctl restart kubelet
+sudo systemctl status kubelet
+
 ##Step 5
 #echo "Step 5"
 #echo "Kubernetes custom source code"
