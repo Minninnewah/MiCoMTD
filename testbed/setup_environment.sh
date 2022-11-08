@@ -1,7 +1,11 @@
 #!/bin/bash
 
 # Init K8s cluster
-sudo apt-get remove docker docker-engine docker.io docker-ce docker-ce-cli -y
+sudo apt-get remove docker docker-engine docker.io docker-ce docker-ce-cli docker-compose-plugin -y
+sudo apt-get autoremove -y --purge docker docker-engine docker.io docker-ce docker-ce-cli docker-compose-plugin
+sudo rm -f /var/run/docker.sock
+sudo rm -rf /var/lib/docker /etc/docker
+
 # step 1
 echo "Step 1"
 echo "Download containerd and unpackage"
@@ -125,46 +129,46 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get install kubeadm=1.19.0-00 kubelet=1.
 whereis kubeadm
 whereis kubelet
 
-#Step 5
-echo "Step 5"
-echo "Kubernetes custom source code"
-#curl -L https://github.com/coreos/etcd/releases/download/v3.0.17/etcd-v3.0.17-linux-amd64.tar.gz -o etcd-v3.0.17-linux-amd64.tar.gz && tar xzvf etcd-v3.0.17-linux-amd64.tar.gz && sudo /bin/cp -f etcd-v3.0.17-linux-amd64/{etcd,etcdctl} /usr/bin && rm -rf etcd-v3.0.17-linux-amd64*
-cd $HOME/tmp
-cd containerd #in tpm
-
-# Get kubernetes source code
-git clone https://github.com/vutuong/kubernetes.git
-
-# Add kubernetes source code to GOPATH
-git clone https://github.com/vutuong/kubernetes.git $GOPATH/src/k8s.io/kubernetes
-cd $GOPATH/src/k8s.io/kubernetes
-hack/install-etcd.sh
-export KUBERNETES_PROVIDER=local # errors
-
-# old golang version
-sudo apt-get --purge remove golang-go -y
-cd $HOME/tmp
-sudo tar -xzf go1.15.5.linux-amd64.tar.gz
-sudo rm -rf /usr/local/go
-sudo mv go /usr/local
-cd $GOPATH/src/k8s.io/kubernetes
-
-make # -> no errors
-# time make quick-release
-#hack/local-up-cluster.sh
-
-
-# Step 6
-echo "Step 6"
-echo "Replace kubelet with custom kubelet"
-cd $HOME/tmp
-git clone https://github.com/SSU-DCN/podmigration-operator.git
-cd podmigration-operator
-tar -vxf binaries.tar.bz2
-cd custom-binaries
-
-chmod +x kubeadm kubelet
-sudo mv kubeadm kubelet /usr/bin/
-sudo systemctl daemon-reload
-sudo systemctl restart kubelet
-sudo systemctl status kubelet
+##Step 5
+#echo "Step 5"
+#echo "Kubernetes custom source code"
+##curl -L https://github.com/coreos/etcd/releases/download/v3.0.17/etcd-v3.0.17-linux-amd64.tar.gz -o etcd-v3.0.17-linux-amd64.tar.gz && tar xzvf etcd-v3.0.17-linux-amd64.tar.gz && sudo /bin/cp -f etcd-v3.0.17-linux-amd64/{etcd,etcdctl} /usr/bin && rm -rf etcd-v3.0.17-linux-amd64*
+#cd $HOME/tmp
+#cd containerd #in tpm
+#
+## Get kubernetes source code
+#git clone https://github.com/vutuong/kubernetes.git
+#
+## Add kubernetes source code to GOPATH
+#git clone https://github.com/vutuong/kubernetes.git $GOPATH/src/k8s.io/kubernetes
+#cd $GOPATH/src/k8s.io/kubernetes
+#hack/install-etcd.sh
+#export KUBERNETES_PROVIDER=local # errors
+#
+## old golang version
+#sudo apt-get --purge remove golang-go -y
+#cd $HOME/tmp
+#sudo tar -xzf go1.15.5.linux-amd64.tar.gz
+#sudo rm -rf /usr/local/go
+#sudo mv go /usr/local
+#cd $GOPATH/src/k8s.io/kubernetes
+#
+#make # -> no errors
+## time make quick-release
+##hack/local-up-cluster.sh
+#
+#
+## Step 6
+#echo "Step 6"
+#echo "Replace kubelet with custom kubelet"
+#cd $HOME/tmp
+#git clone https://github.com/SSU-DCN/podmigration-operator.git
+#cd podmigration-operator
+#tar -vxf binaries.tar.bz2
+#cd custom-binaries
+#
+#chmod +x kubeadm kubelet
+#sudo mv kubeadm kubelet /usr/bin/
+#sudo systemctl daemon-reload
+#sudo systemctl restart kubelet
+#sudo systemctl status kubelet
