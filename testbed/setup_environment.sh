@@ -20,10 +20,10 @@ sudo mv go /usr/local
 #sudo vi $HOME/.profile
 echo 'export GOROOT=/usr/local/go' >> $HOME/.profile
 echo 'export GOPATH=$HOME/go' >> $HOME/.profile
-echo 'export PATH=GOBIN=$GOPATH/bin' >> $HOME/.profile
+echo 'export GOBIN=$GOPATH/bin' >> $HOME/.profile
 echo 'export PATH=$GOROOT/bin:$GOBIN:$PATH' >> $HOME/.profile
-echo 'export PATH="/usr/bin:$PATH"' >> $HOME/.profile
-echo 'export PATH=$PATH:/usr/local/go/bin:$GOPATH/bin' >> $HOME/.profile
+#echo 'export PATH="/usr/bin:$PATH"' >> $HOME/.profile
+#echo 'export PATH=$PATH:/usr/local/go/bin:$GOPATH/bin' >> $HOME/.profile
 source $HOME/.profile
 go version
 
