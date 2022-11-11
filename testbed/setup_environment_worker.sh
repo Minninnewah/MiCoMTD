@@ -30,6 +30,7 @@ sudo mount -t nfs -o nfsvers=3 10.10.0.155:/var/lib/kubelet/migration /var/lib/k
 echo "Install migrate/nsapshot plugin"
 cd $HOME/tmp
 cd podmigration-operator
+cd kubectl-plugin/
 cd checkpoint-command
 go build -o kubectl-checkpoint
 sudo cp kubectl-checkpoint /usr/local/bin
