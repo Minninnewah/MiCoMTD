@@ -25,4 +25,4 @@ tcp-close' | sudo tee /etc/criu/runc.conf >/dev/null
 echo "Configure NFS share folder"
 sudo apt-get update
 sudo DEBIAN_FRONTEND=noninteractive apt-get install nfs-common -y
-sudo mount -t nfs -o nfsvers=3 10.10.3.124:/var/lib/kubelet/migration /var/lib/kubelet/migration
+sudo mount -t nfs -o nfsvers=3 10.10.0.155:/var/lib/kubelet/migration /var/lib/kubelet/migration
