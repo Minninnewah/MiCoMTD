@@ -141,7 +141,7 @@ chmod +x kubeadm kubelet
 sudo mv kubeadm kubelet /usr/bin/
 sudo systemctl daemon-reload
 sudo systemctl restart kubelet
-sudo systemctl status kubelet
+#sudo systemctl status kubelet
 
 ##Step 5
 #echo "Step 5"
