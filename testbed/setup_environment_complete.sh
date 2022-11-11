@@ -19,5 +19,5 @@ elif [ $role == "w" ]; then
         echo "Joint to master noder"
         $joinCommand
         wget -O - https://raw.githubusercontent.com/Minninnewah/MiCoMTD/main/testbed/setup_environment_worker.sh | bash
-        
+fi
         
