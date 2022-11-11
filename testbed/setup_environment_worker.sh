@@ -26,3 +26,15 @@ echo "Configure NFS share folder"
 sudo apt-get update
 sudo DEBIAN_FRONTEND=noninteractive apt-get install nfs-common -y
 sudo mount -t nfs -o nfsvers=3 10.10.0.155:/var/lib/kubelet/migration /var/lib/kubelet/migration
+
+echo "Install migrate/nsapshot plugin"
+cd $HOME/tmp
+cd podmigration-operator
+cd checkpoint-command
+go build -o kubectl-checkpoint
+sudo cp kubectl-checkpoint /usr/local/bin
+
+cd ..
+cd migrate-command
+go build -o kubectl-migrate
+sudo cp kubectl-migrate /usr/local/bin
