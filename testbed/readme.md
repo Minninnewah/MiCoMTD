@@ -1,4 +1,4 @@
-Set up kubernetes nodes accordingly to the [podmigration-operator repository](https://github.com/SSU-DCN/podmigration-operator)
+Set up kubernetes nodes (cluster) accordingly to the [podmigration-operator repository](https://github.com/SSU-DCN/podmigration-operator)
 ```
 wget -O - https://raw.githubusercontent.com/Minninnewah/MiCoMTD/main/testbed/setup_environment_complete.sh | bash
 ```
