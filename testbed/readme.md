@@ -1,4 +1,13 @@
-Set up step 1 - 6 for all kubernetes nodes
+Set up kubernetes nodes accordingly to the [podmigration-operator repository](https://github.com/SSU-DCN/podmigration-operator)
 ```
-wget -O - https://raw.githubusercontent.com/Minninnewah/MiCoMTD/main/testbed/setup_environment.sh | bash![grafik](https://user-images.githubusercontent.com/40040609/199741510-b7835564-8f55-4b3c-a393-f2f2729c3e60.png)
+wget -O - https://raw.githubusercontent.com/Minninnewah/MiCoMTD/main/testbed/setup_environment_complete.sh | bash
 ```
+
+The script request all neccessary information at the beginning of the script:
+
+Worker or Master?<br />
+* [w]<br />
+  * [join command of master]<br />
+  * [ip adress of master (for nfs mount)]<br />
+* [m]<br />
+  * [local ip address range of workers (to set nfs permissions)]<br />
