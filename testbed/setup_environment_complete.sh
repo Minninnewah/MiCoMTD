@@ -4,14 +4,14 @@ if [  $role == "m"  ]; then
         read -p 'Local ip address range of the worker nodes to set up the nfs server (like 10.0.0.0/16): ' workerRange
 elif [ $role == "w" ]; then
         echo "Set up Worker node"
-        read -p 'Enter join command from master node: ' joinCommand
-        read -p 'Enter local ip of master node: ' masterIP
+        read -p 'Enter join command from master node (sudo kubeadm join ...): ' joinCommand
+        read -p 'Enter local ip of master node (like 10.0.0.34: ' masterIP
 else
         echo "Abort, Inacceptable selection"
         exit 0
 fi
 
-wget -O - https://raw.githubusercontent.com/Minninnewah/MiCoMTD/main/testbed/setup_environment_basic.sh | bash
+wget -O - https://raw.githubusercontent.com/Minninnewah/MiCoMTD/main/testbed/setup_environment_basic_2.sh | bash
 
 
 if [  $role == "m"  ]; then
