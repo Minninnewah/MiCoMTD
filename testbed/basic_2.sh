@@ -72,13 +72,25 @@ echo "Replace the containerd-cri with interface extentions supporting CRIU"
 #cd _output/
 #sudo mv containerd /bin/
 #cd containerd/
-wget https://k8s-pod-migration.obs.eu-de.otc.t-systems.com/v2/containerd
-git clone https://github.com/SSU-DCN/podmigration-operator.git
-cd podmigration-operator
-tar -vxf binaries.tar.bz2
-cd custom-binaries/
-chmod +x containerd
+
+
+#With this is works
+cd $HOME/tmp
+git clone https://github.com/vutuong/containerd-cri.git
+cd containerd-cri/
+go get github.com/containerd/cri/cmd/containerd
+make
+sudo make install
+cd _output/
 sudo mv containerd /bin/
+
+#wget https://k8s-pod-migration.obs.eu-de.otc.t-systems.com/v2/containerd
+#git clone https://github.com/SSU-DCN/podmigration-operator.git
+#cd podmigration-operator
+#tar -vxf binaries.tar.bz2
+#cd custom-binaries/
+#chmod +x containerd
+#sudo mv containerd /bin/
 
 #Configure containerd and create the containerd configuration file
 echo "Configure containerd and create the containerd configuration file"
