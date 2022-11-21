@@ -58,7 +58,9 @@ cd containerd
 git clone --branch extended_snapshot https://github.com/Minninnewah/containerd.git
 cd containerd
 make
-sudo make install
+sudo mv bin/* /bin/
+
+#sudo make install
 
 
 echo "replace containerd-cri"
