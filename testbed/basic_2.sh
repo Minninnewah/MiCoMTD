@@ -52,7 +52,7 @@ cd containerd
 git clone --branch extended_snapshot https://github.com/Minninnewah/containerd.git
 cd containerd
 make
-sudo mv /bin/* /bin/
+sudo mv bin/* /bin/
 
 
 
@@ -71,7 +71,7 @@ echo "Replace the containerd-cri with interface extentions supporting CRIU"
 #sudo make install # comment -> unsafe repo is owne dby someone else
 #cd _output/
 #sudo mv containerd /bin/
-cd containerd/
+#cd containerd/
 wget https://k8s-pod-migration.obs.eu-de.otc.t-systems.com/v2/containerd
 git clone https://github.com/SSU-DCN/podmigration-operator.git
 cd podmigration-operator
