@@ -8,6 +8,7 @@ elif [ $role == "w" ]; then
         read -p 'Enter local ip of master node: ' masterIP
 else
         echo "Abort, Inacceptable selection"
+        exit 0
 fi
 
 wget -O - https://raw.githubusercontent.com/Minninnewah/MiCoMTD/main/testbed/setup_environment_basic.sh | bash
