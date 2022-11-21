@@ -26,32 +26,43 @@ source $HOME/.profile
 go version
 
 sudo DEBIAN_FRONTEND=noninteractive apt install make -y
+sudo apt-get install unzip
 wget -c https://github.com/google/protobuf/releases/download/v3.5.0/protoc-3.5.0-linux-x86_64.zip
 sudo unzip protoc-3.5.0-linux-x86_64.zip -d /usr/local
 sudo DEBIAN_FRONTEND=noninteractive apt-get install btrfs-tools
 sudo DEBIAN_FRONTEND=noninteractive apt install libseccomp-dev
 
 #runc
-cd $GOPATH/src
-mkdir github.com
-cd github.com
-mkdir opencontainers
-cd opencontainers
-git clone https://github.com/Minninnewah/runc/tree/release-1.0
-cd runc
-make
-sudo make install
+#sudo apt install pkg-config -y
+#cd ..
+#mkdir go
+#cd go 
+#mkdir src
+#cd $GOPATH/src
+#mkdir github.com
+#cd github.com
+#mkdir opencontainers
+#cd opencontainers
+#git clone --branch release-1.0 https://github.com/Minninnewah/runc.git
+#cd runc
+#make
+##sudo make install
+#sudo -E env "PATH=$PATH" make install
+
 
 # containerd
 cd $GOPATH/src/github.com
+mkdir containerd
+cd containerd
 #cd $HOME/tmp
-git clone https://github.com/Minninnewah/containerd/tree/extended_snapshot
+git clone --branch extended_snapshot https://github.com/Minninnewah/containerd.git
 cd containerd
 make
 sudo make install
 
 
 echo "replace containerd-cri"
+cd $HOME/tmp
 git clone https://github.com/Minninnewah/containerd-cri
 cd containerd-cri/
 go get github.com/containerd/cri/cmd/containerd
@@ -94,17 +105,18 @@ echo '[plugins]
       runtime_type = "io.containerd.runtime.v1.linux"
       runtime_engine = "/usr/local/bin/runc"
       runtime_root = ""' | sudo tee /etc/containerd/config.toml >/dev/null
+      
 
 # Install newest version of runc
-#echo "Install newest version of runc"
-#cd $HOME/tmp
-#mkdir runc
-#cd runc
-#wget https://github.com/opencontainers/runc/releases/download/v1.0.0-rc92/runc.amd64
-#whereis runc
-#sudo mv runc.amd64 runc
-#chmod +x runc
-#sudo mv runc /usr/local/bin/
+echo "Install newest version of runc"
+cd $HOME/tmp
+mkdir runc
+cd runc
+wget https://github.com/opencontainers/runc/releases/download/v1.0.0-rc92/runc.amd64
+whereis runc
+sudo mv runc.amd64 runc
+chmod +x runc
+sudo mv runc /usr/local/bin/
 
 # Configure containerd and create the containerd.service systemd unit file
 echo "Configure containerd"
