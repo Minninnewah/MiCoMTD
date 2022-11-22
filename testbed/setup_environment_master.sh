@@ -16,6 +16,8 @@ do
         esac
 done
 
+source $HOME/.profile
+
 echo "Setup kubeadm"
 sudo kubeadm init --pod-network-cidr=10.244.0.0/16
 
@@ -38,3 +40,13 @@ sudo systemctl enable nfs-kernel-server
 sudo systemctl status nfs-kernel-server
 sudo chmod 777 /var/lib/kubelet/
 sudo chmod 777 /var/lib/kubelet/migration
+
+cd $HOME/tmp/podmigration-operator/kubectl-plugin
+go build -o kubectl-checkpoint
+sudo cp kubectl-checkpoint /usr/local/bin
+
+cd ..
+cd migrate-command
+go build -o kubectl-migrate
+sudo cp kubectl-migrate /usr/local/bin
+
