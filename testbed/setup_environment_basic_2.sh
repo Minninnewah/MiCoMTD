@@ -56,7 +56,8 @@ git clone https://github.com/Minninnewah/containerd-cri
 cd containerd-cri/
 go get github.com/containerd/cri/cmd/containerd  #Not sure about this step or if i need to use my own girhub repo again
 make
-sudo make install
+#sudo make install
+sudo -E env "PATH=$PATH" make install
 cd _output/
 sudo mv containerd /bin/
 
