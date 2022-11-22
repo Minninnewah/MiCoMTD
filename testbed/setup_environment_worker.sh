@@ -31,7 +31,7 @@ protobuf-compiler python-protobuf libnl-3-dev libcap-dev libaio-dev \
 apparmor libnet1-dev libnl-genl-3-dev libnl-route-3-dev libnfnetlink-dev pkg-config -y
 
 make clean
-make
+sudo make #Didn't need the sude the first time
 sudo make install
 sudo criu check
 sudo criu check --all
@@ -43,6 +43,9 @@ tcp-close' | sudo tee /etc/criu/runc.conf >/dev/null
 
 echo "Configure NFS share folder"
 sudo apt-get update
+sudo mkdir /var/lib/kubelet/migration
+sudo chmod 777 /var/lib/kubelet/
+sudo chmod 777 /var/lib/kubelet/migration
 sudo DEBIAN_FRONTEND=noninteractive apt-get install nfs-common -y
 sudo mount -t nfs -o nfsvers=3 $ip:/var/lib/kubelet/migration /var/lib/kubelet/migration
 
