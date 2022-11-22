@@ -41,12 +41,11 @@ sudo systemctl status nfs-kernel-server
 sudo chmod 777 /var/lib/kubelet/
 sudo chmod 777 /var/lib/kubelet/migration
 
-cd $HOME/tmp/podmigration-operator/kubectl-plugin
+cd $HOME/tmp/podmigration-operator/kubectl-plugin/checkpoint-command
 go build -o kubectl-checkpoint
 sudo cp kubectl-checkpoint /usr/local/bin
 
-cd ..
-cd migrate-command
+cd $HOME/tmp/podmigration-operator/kubectl-plugin/migrate-command
 go build -o kubectl-migrate
 sudo cp kubectl-migrate /usr/local/bin
 
