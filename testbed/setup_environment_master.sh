@@ -5,7 +5,7 @@ if [ $# -ne 2 ]; then
 fi
 
 if [ "$1" != "-r" ]; then
-  echo "Only -h flag supported"
+  echo "Only -r flag supported"
   exit;
 fi
 
@@ -31,7 +31,7 @@ kubectl get pods -n kube-system
 sudo mkdir /var/lib/kubelet/migration
 sudo apt-get update
 sudo DEBIAN_FRONTEND=noninteractive apt-get install nfs-kernel-server -y
-echo '/var/lib/kubelet/migration/  $range(rw,sync,no_subtree_check)' | sudo tee /etc/exports >/dev/null
+echo "/var/lib/kubelet/migration/  $range(rw,sync,no_subtree_check)" | sudo tee /etc/exports >/dev/null
 sudo exportfs -arvf
 sudo systemctl start nfs-kernel-server
 sudo systemctl enable nfs-kernel-server
