@@ -17,6 +17,8 @@ do
 done
 echo "IP: $ip";
 
+source $HOME/.profile
+
 echo "Install CRIU"
 cd $HOME/tmp
 cd podmigration-operator
