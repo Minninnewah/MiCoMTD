@@ -31,7 +31,6 @@ sudo unzip protoc-3.5.0-linux-x86_64.zip -d /usr/local
 sudo DEBIAN_FRONTEND=noninteractive apt-get install btrfs-tools
 sudo DEBIAN_FRONTEND=noninteractive apt install libseccomp-dev
 
-#error while migrating
 ## Compile and install containerd
 echo "---Compile and install containerd---"
 mkdir go
@@ -47,7 +46,6 @@ cd containerd
 make
 sudo mv bin/* /bin/
 
-#with 3 lines it works fine?
 #just add it to the other folder
 #wget https://github.com/containerd/containerd/releases/download/v1.3.6/containerd-1.3.6-linux-amd64.tar.gz
 #mkdir containerd
@@ -59,24 +57,24 @@ echo "---Replace the containerd-cri with interface extentions supporting CRIU---
 
 # Error whilemigrating
 cd $HOME/tmp
-#git clone https://github.com/Minninnewah/containerd-cri
-#cd containerd-cri/
-#go get github.com/containerd/cri/cmd/containerd  #Not sure about this step or if i need to use my own girhub repo again
-#make
-##sudo make install
-#sudo -E env "PATH=$PATH" make install
-#cd _output/
-#sudo mv containerd /bin/
+git clone https://github.com/Minninnewah/containerd-cri
+cd containerd-cri/
+go get github.com/containerd/cri/cmd/containerd  #Not sure about this step or if i need to use my own girhub repo again
+make
+#sudo make install
+sudo -E env "PATH=$PATH" make install
+cd _output/
+sudo mv containerd /bin/
 
 #With this is works (precompiled cri-containerd)
-cd containerd/ #additional
-wget https://k8s-pod-migration.obs.eu-de.otc.t-systems.com/v2/containerd
-git clone https://github.com/SSU-DCN/podmigration-operator.git
-cd podmigration-operator
-tar -vxf binaries.tar.bz2
-cd custom-binaries/
-chmod +x containerd
-sudo mv containerd /bin/
+#cd containerd/ #additional
+#wget https://k8s-pod-migration.obs.eu-de.otc.t-systems.com/v2/containerd
+#git clone https://github.com/SSU-DCN/podmigration-operator.git
+#cd podmigration-operator
+#tar -vxf binaries.tar.bz2
+#cd custom-binaries/
+#chmod +x containerd
+#sudo mv containerd /bin/
 
 #Configure containerd and create the containerd configuration file
 echo "---Configure containerd and create the containerd configuration file---"
