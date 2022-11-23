@@ -11,3 +11,12 @@ Worker or Master?<br />
   * [ip adress of master (for nfs mount)]<br />
 * [m]<br />
   * [local ip address range of workers (to set nfs permissions)]<br />
+
+
+
+## Typical errors
+### go not found
+- Often the source of the bash is not set
+```
+sudo apt-get install gcc
+```
