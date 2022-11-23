@@ -47,11 +47,12 @@ cd containerd
 make
 sudo mv bin/* /bin/
 
+#with 3 lines it works fine?
 #just add it to the other folder
-wget https://github.com/containerd/containerd/releases/download/v1.3.6/containerd-1.3.6-linux-amd64.tar.gz
-mkdir containerd
-tar -xvf containerd-1.3.6-linux-amd64.tar.gz -C containerd
-#sudo mv containerd/bin/* /bin/
+#wget https://github.com/containerd/containerd/releases/download/v1.3.6/containerd-1.3.6-linux-amd64.tar.gz
+#mkdir containerd
+#tar -xvf containerd-1.3.6-linux-amd64.tar.gz -C containerd
+##sudo mv containerd/bin/* /bin/
 
 #Replace containerrd-cri with version supporting CRIU
 echo "---Replace the containerd-cri with interface extentions supporting CRIU---"
