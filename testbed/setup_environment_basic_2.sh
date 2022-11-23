@@ -33,25 +33,25 @@ sudo DEBIAN_FRONTEND=noninteractive apt install libseccomp-dev
 
 #error while migrating
 ## Compile and install containerd
-#echo "---Compile and install containerd---"
-#mkdir go
-#cd go 
-#mkdir src
-#cd $GOPATH/src
-#mkdir github.com
-#cd github.com
-#mkdir containerd
-#cd containerd
-#git clone --branch extended_snapshot https://github.com/Minninnewah/containerd.git
-#cd containerd
-#make
-#sudo mv bin/* /bin/
+echo "---Compile and install containerd---"
+mkdir go
+cd go 
+mkdir src
+cd $GOPATH/src
+mkdir github.com
+cd github.com
+mkdir containerd
+cd containerd
+git clone --branch extended_snapshot https://github.com/Minninnewah/containerd.git
+cd containerd
+make
+sudo mv bin/* /bin/
 
-sudo DEBIAN_FRONTEND=noninteractive apt install make -y #popup
+#just add it to the other folder
 wget https://github.com/containerd/containerd/releases/download/v1.3.6/containerd-1.3.6-linux-amd64.tar.gz
 mkdir containerd
 tar -xvf containerd-1.3.6-linux-amd64.tar.gz -C containerd
-sudo mv containerd/bin/* /bin/
+#sudo mv containerd/bin/* /bin/
 
 #Replace containerrd-cri with version supporting CRIU
 echo "---Replace the containerd-cri with interface extentions supporting CRIU---"
