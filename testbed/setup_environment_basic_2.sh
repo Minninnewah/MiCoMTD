@@ -64,6 +64,7 @@ make
 #sudo make install
 sudo -E env "PATH=$PATH" make install
 cd _output/
+chmod +x containerd
 sudo mv containerd /bin/
 
 #With this is works (precompiled cri-containerd)
