@@ -32,6 +32,8 @@ source $HOME/.profile
 2. run podmigration operator
 ```
 cd tmp/podmigration-operator
+sudo snap install kustomize
+sudo apt-get install gcc
 make manifests
 make install
 make run
