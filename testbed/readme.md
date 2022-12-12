@@ -22,10 +22,15 @@ Worker or Master?<br />
   * [local ip address range of workers (to set nfs permissions)]<br />
 
 
+## Migration
+1. run video pod
+```
+
+```
 
 ## Typical errors
 ### go not found
 - Often the source of the bash is not set
 ```
-sudo apt-get install gcc
+source $HOME/.profile
 ```
