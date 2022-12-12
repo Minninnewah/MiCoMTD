@@ -23,10 +23,34 @@ Worker or Master?<br />
 
 
 ## Migration
-1. run video pod
+ 
+1. Use source
 ```
-
+source $HOME/.profile
 ```
+2. run video pod
+```
+cd tmp/podmigration-operator/config/samples/migration-example
+```
+change node seletor in yaml
+```
+nano 2.yaml 
+```
+ 
+run pod
+```
+kubectl apply -f 2.yaml
+```
+ 
+3. Wait until pod is running
+ ```
+ kubectl get pods
+ ```
+ 
+ 4. Migrate command
+  ```
+  kubectl migrate video worker1
+  ```
 
 ## Typical errors
 ### go not found
