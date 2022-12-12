@@ -28,7 +28,21 @@ Worker or Master?<br />
 ```
 source $HOME/.profile
 ```
-2. run video pod
+ 
+2. run podmigration operator
+cd tmp/podmigration-operator
+make manifests
+make install
+make run
+ 
+3. run api server (new terminal)
+```
+ source $HOME/.profile
+ cd tmp/podmigration-operator
+ go run ./api-server/cmd/main.go
+```
+ 
+4. run video pod (new terminal)
 ```
 cd tmp/podmigration-operator/config/samples/migration-example
 ```
@@ -42,12 +56,12 @@ run pod
 kubectl apply -f 2.yaml
 ```
  
-3. Wait until pod is running
+5. Wait until pod is running
  ```
  kubectl get pods
  ```
  
- 4. Migrate command
+ 6. Migrate command
   ```
   kubectl migrate video worker1
   ```
