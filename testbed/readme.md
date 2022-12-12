@@ -30,10 +30,12 @@ source $HOME/.profile
 ```
  
 2. run podmigration operator
+```
 cd tmp/podmigration-operator
 make manifests
 make install
 make run
+```
  
 3. run api server (new terminal)
 ```
