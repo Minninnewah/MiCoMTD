@@ -1,4 +1,13 @@
-Set up kubernetes nodes (cluster) accordingly to the [podmigration-operator repository](https://github.com/SSU-DCN/podmigration-operator) with own containerd and containerd-cri version. Interactive script:
+Set up kubernetes nodes (cluster) accordingly to the [podmigration-operator repository](https://github.com/SSU-DCN/podmigration-operator) with own containerd and containerd-cri version
+
+1. (Remove old fingerporint)
+ssh-keygen -R 160.85.253.79
+
+2. ssh connection
+ssh ubuntu@<ip> -i <pathToKeyFile>
+
+
+Interactive script:
 ```
 bash <(wget -qO- https://raw.githubusercontent.com/Minninnewah/MiCoMTD/main/testbed/setup_environment_complete.sh )
 ```
