@@ -56,26 +56,27 @@ sudo mv bin/* /bin/
 echo "---Replace the containerd-cri with interface extentions supporting CRIU---"
 
 # Error whilemigrating
-#cd $HOME/tmp
-#git clone https://github.com/Minninnewah/containerd-cri
-#cd containerd-cri/
-#go get github.com/containerd/cri/cmd/containerd  #This is not requesting something from the internet instead from /home/ubuntu/go/src/github.com/containerd/cri/cmd/containerd/
-#make
-##sudo make install
-#sudo -E env "PATH=$PATH" make install
-#cd _output/
-#chmod +x containerd
-#sudo mv containerd /bin/
-
-#With this is works (precompiled cri-containerd)
-cd containerd/ #additional
-wget https://k8s-pod-migration.obs.eu-de.otc.t-systems.com/v2/containerd
-git clone https://github.com/SSU-DCN/podmigration-operator.git
-cd podmigration-operator
-tar -vxf binaries.tar.bz2
-cd custom-binaries/
+cd $HOME/tmp
+git clone https://github.com/Minninnewah/containerd-cri
+cd containerd-cri/
+git checkout feature/checkpoint-restore
+go get github.com/containerd/cri/cmd/containerd  #This is not requesting something from the internet instead from /home/ubuntu/go/src/github.com/containerd/cri/cmd/containerd/
+make
+#sudo make install
+sudo -E env "PATH=$PATH" make install
+cd _output/
 chmod +x containerd
 sudo mv containerd /bin/
+
+#With this is works (precompiled cri-containerd)
+#cd containerd/ #additional
+#wget https://k8s-pod-migration.obs.eu-de.otc.t-systems.com/v2/containerd
+#git clone https://github.com/SSU-DCN/podmigration-operator.git
+#cd podmigration-operator
+#tar -vxf binaries.tar.bz2
+#cd custom-binaries/
+#chmod +x containerd
+#sudo mv containerd /bin/
 
 #Configure containerd and create the containerd configuration file
 echo "---Configure containerd and create the containerd configuration file---"
