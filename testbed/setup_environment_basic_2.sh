@@ -59,7 +59,7 @@ echo "---Replace the containerd-cri with interface extentions supporting CRIU---
 #cd $HOME/tmp
 #git clone https://github.com/Minninnewah/containerd-cri
 #cd containerd-cri/
-#go get github.com/containerd/cri/cmd/containerd  #Not sure about this step or if i need to use my own girhub repo again
+#go get github.com/containerd/cri/cmd/containerd  #This is not requesting something from the internet instead from /home/ubuntu/go/src/github.com/containerd/cri/cmd/containerd/
 #make
 ##sudo make install
 #sudo -E env "PATH=$PATH" make install
