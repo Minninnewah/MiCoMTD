@@ -71,6 +71,22 @@ kubectl apply -f 2.yaml
   ```
 
 ## Typical errors
+### Check logs
+containerd
+```
+sudo systemctl status containerd
+```
+```
+journalctl -xfu containerd
+```
+kubelet
+```
+sudo systemctl status kubelet
+```
+```
+journalctl -xfu kubelet
+```
+
 ### go not found
 - Often the source of the bash is not set
 ```
