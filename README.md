@@ -7,7 +7,7 @@ To set up the testbed for this MTC controller, follow [these steps](https://gith
 ## Server controller
 Each cluster in the environment needs a running instance of the server-controller on the master node. This controller is responsible for converting API calls to kubectl commands. The controller can be started using:
 ```
-wget -O - https://raw.githubusercontent.com/Minninnewah/MiCoMTD/main/src/server-controller/server-controller.js | node
+wget -O - https://raw.githubusercontent.com/Minninnewah/MiCoMTD/main/src/server_controller/index.js | node
 ```
 Requirements:
 express: ```npm install express```
