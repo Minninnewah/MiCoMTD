@@ -11,6 +11,8 @@ wget -O - https://raw.githubusercontent.com/Minninnewah/MiCoMTD/main/src/server_
 ```
 Requirements:
 express: ```npm install express```
+wget: ```sudo apt install wget -y``` (for dowloading file)
+npm: ```sudo apt install npm -y``` (for installing express pkg)
 
 ### API
 - /nodes              | Get all the different nodes in this cluster. ```curl localhost:6666/nodes```
