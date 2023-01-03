@@ -21,4 +21,29 @@ npm: ```sudo apt install npm -y``` (for installing express pkg)
 - /restart/:service   | Restart a service without downtimes ```curl localhost:6666/restart/cloud-db-handler```
 
 ## MTD controller
-The MTC controller is responsible for scheduling and controlling of the MTD actions.
+The MTC controller is responsible for scheduling and controlling of the MTD actions. It will start an API server so send control commands to the MTD controller which then use different executors to execute the different MTD actions.
+
+### Run
+#### Activate virtual environement
+Setup env
+```
+ToDo
+```
+
+Activate env
+```
+.\venv\Scripts\activate
+```
+Install dependencies
+```
+ToDo
+```
+#### Run code
+```
+python ./src/MTD_controller/mtd_controller.py
+```
+
+### API
+ToDo
+
+
