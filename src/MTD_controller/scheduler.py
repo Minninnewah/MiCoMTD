@@ -16,6 +16,8 @@ class Scheduler:
     
     def schedule (self):
         if self.mode == SchedulerMode.MANUEL:
+            if not self.manuel_action.value.isReady():
+                self.manuel_action.value.generate_random_values()
             self.manuel_action.value.execute()
             self.manuel_action = MTDAction.DO_NOTHING
             pass

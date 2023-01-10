@@ -7,3 +7,9 @@ class EmptyExecutor(ActionExecutor):
     def execute(self):
         print("Empty executor")
         pass
+
+    def isReady(self): 
+        return True
+
+    def generate_random_values(self):
+        pass

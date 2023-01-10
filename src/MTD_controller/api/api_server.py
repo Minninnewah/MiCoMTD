@@ -60,6 +60,11 @@ def set_manual_action ():
     action = MTDAction[req.json[param]]
     scheduler.set_manuel_MTD_action(action)
 
+    if action == MTDAction.REINSTANTIATION:
+        param = "service"
+        if __check_req_json_param(req, param):
+            action.value.setup(req.json[param])
+
     return __generate_json_response({}, StatusCode.CREATED)
 
 @api.route('/actions', methods=['get'])
