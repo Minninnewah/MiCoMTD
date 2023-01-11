@@ -96,27 +96,76 @@ async function get_deployment_to_service (service) {
     return deployments;
 }
 
+async function get_statefulSet_to_service (service) {
+    const command = "get statefulSet -o json --selector=app=" + service
+    let data = await execute_kubectl(command);
+    let statefulSets = []
+    data = JSON.parse(data);
+
+    data.items.forEach(element => {
+        statefulSets.push(element.spec.selector.matchLabels.app)
+    })
+    return statefulSets;
+}
+
 async function restart_deployment(deployment) {
     const restart_deployment_command = "rollout restart deployment " + deployment;
+    execute_kubectl(restart_deployment_command);
+}
+
+async function restart_statefulSet(statefulSet) {
+    const restart_statefulSet_command = "rollout restart statefulSet " + statefulSet;
+    execute_kubectl(restart_statefulSet_command);
+}
+
+async function stop_service(url_manifest) {
+    command = "delete -f " + url_manifest
+    execute_kubectl(restart_deployment_command);
+}
+
+async function start_service(url_manifest) {
+    command = "apply -f " + url_manifest
     execute_kubectl(restart_deployment_command);
 }
 
 async function restart_service(req, res) {
     const service = req.params.service;
     const deployments = await get_deployment_to_service(service);
+    const statefulSets = await get_statefulSet_to_service(service);
 
     deployments.forEach(deployment => {
         restart_deployment(deployment);
     })
 
+    statefulSets.forEach(statefulSet => {
+        restart_statefulSet(statefulSets);
+    })
+
     res.status(200).send();
 }
 
+async function stop_service(req, res) {
+    manifest_url = req.body.manifest_url
+    
+    stop_service(manifest_url);
+
+    res.status(200).send();
+}
+
+async function start_service(req, res) {
+    manifest_url = req.body.manifest_url
+    
+    start_service(manifest_url)
+
+    res.status(200).send();
+}
 
 app.get('/nodes', get_nodes);
 app.get('/pods', get_pods);
 app.get('/services', get_services);
 app.get('/restart/:service', restart_service)
+app.delete('/stop/', stop_service)
+app.post('/start/', start_service)
 
 app.listen(PORT, HOST, () => {
     console.log(`Running on http://${HOST}:${PORT}`);
