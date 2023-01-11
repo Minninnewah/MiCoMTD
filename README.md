@@ -38,6 +38,14 @@ Install dependencies
 ```
 ToDo
 ```
+
+#### Adapt code
+Since the code for the MTD controller is configured for our test environment there are a few adaptions that have to be done. To keep it simple all the basic environment based configuration is stored in the file ```environment.py```
+- Adapt the ip and port of your TopoFuzzer instance (port is the default port of TopoFuzzer)
+- Add all the ip addresses of the instance on which the server_controllers are running (this should be one per cluster and by default the master node)
+- Adapt the server_controller port if not kept at default value
+- Add all the servic manifest urls (are needed in to start and stop services -> for migration)
+
 #### Run code
 ```
 python ./src/MTD_controller/mtd_controller.py
