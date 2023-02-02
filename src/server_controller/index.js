@@ -118,16 +118,6 @@ async function restart_statefulSet(statefulSet) {
     execute_kubectl(restart_statefulSet_command);
 }
 
-async function stop_service(url_manifest) {
-    command = "delete -f " + url_manifest
-    execute_kubectl(restart_deployment_command);
-}
-
-async function start_service(url_manifest) {
-    command = "apply -f " + url_manifest
-    execute_kubectl(restart_deployment_command);
-}
-
 async function restart_service(req, res) {
     const service = req.params.service;
     const deployments = await get_deployment_to_service(service);
@@ -145,17 +135,19 @@ async function restart_service(req, res) {
 }
 
 async function stop_service(req, res) {
-    manifest_url = req.body.manifest_url
-    
-    stop_service(manifest_url);
+    const manifest_url = req.body.manifest_url
+
+    let command = "delete -f " + manifest_url
+    execute_kubectl(command);
 
     res.status(200).send();
 }
 
 async function start_service(req, res) {
-    manifest_url = req.body.manifest_url
-    
-    start_service(manifest_url)
+
+    const manifest_url = req.body.manifest_url;
+    let command = "apply -f " + manifest_url
+    execute_kubectl(command);
 
     res.status(200).send();
 }
@@ -164,8 +156,8 @@ app.get('/nodes', get_nodes);
 app.get('/pods', get_pods);
 app.get('/services', get_services);
 app.get('/restart/:service', restart_service)
-app.delete('/stop/', stop_service)
-app.post('/start/', start_service)
+app.delete('/stop', stop_service)
+app.post('/start', start_service)
 
 app.listen(PORT, HOST, () => {
     console.log(`Running on http://${HOST}:${PORT}`);

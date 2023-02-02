@@ -1,0 +1,277 @@
+heat_template_version: "2021-04-16"
+description: "version 2017-09-01 created by HOT Generator at Wed, 21 Dec 2022 16:33:00 GMT."
+
+#----------------------------------------------------------------------------------------------------------------
+#--- Parameters
+parameters:
+  key_name:
+    type: string
+    default: "ssh_connection_phileus"
+  image:
+    type: string
+    default: "Ubuntu_18_04_cloud"
+  flavor:
+    type: string
+    default: "m1.medium"
+  public_net:
+    type: string
+    default: "external"
+
+#----------------------------------------------------------------------------------------------------------------
+#--- Resources
+resources: 
+  Volume_1: 
+    type: "OS::Cinder::Volume"
+    properties: 
+      name: Vol_Worker_1
+      size: 25
+      image: {get_param: image}
+      availability_zone: nova
+  Volume_2: 
+    type: "OS::Cinder::Volume"
+    properties: 
+      name: Vol_Worker_2
+      size: 25
+      image: {get_param: image}
+      availability_zone: nova
+  Volume_3: 
+    type: "OS::Cinder::Volume"
+    properties: 
+      name: Vol_Master
+      size: 25
+      image: {get_param: image}
+      availability_zone: nova
+  Volume_4: 
+    type: "OS::Cinder::Volume"
+    properties: 
+      name: Vol_Master
+      size: 25
+      image: {get_param: image}
+      availability_zone: nova
+  Server_1: 
+    type: "OS::Nova::Server"
+    depends_on: 
+      - Volume_1
+      - RouterInterface_1
+      - Port_1
+    properties: 
+      name: Worker_1
+      flavor: { get_param: flavor }
+      block_device_mapping: [{ device_name: "vda", volume_id: { get_resource: Volume_1 }, delete_on_termination: "true" }]
+      availability_zone: nova
+      key_name: { get_param: key_name}
+      networks: 
+        - port: {get_resource: Port_1}
+  Server_2: 
+    type: "OS::Nova::Server"
+    depends_on: 
+      - Volume_2
+      - RouterInterface_1
+      - Port_2
+    properties: 
+      name: Worker_2
+      flavor: { get_param: flavor }
+      block_device_mapping: [{ device_name: "vda", volume_id: { get_resource: Volume_2 }, delete_on_termination: "true" }]
+      availability_zone: nova
+      key_name: { get_param: key_name}
+      networks: 
+        - port: { get_resource: Port_2}
+  Server_3: 
+    type: "OS::Nova::Server"
+    depends_on: 
+      - Volume_3
+      - RouterInterface_1
+      - Port_3
+    properties: 
+      name: Master
+      flavor: { get_param: flavor }
+      block_device_mapping: [{ device_name: "vda", volume_id: { get_resource: Volume_3 }, delete_on_termination: "true" }]
+      availability_zone: nova
+      key_name: { get_param: key_name}
+      networks: 
+        - port: { get_resource: Port_3}
+  Server_4: 
+    type: "OS::Nova::Server"
+    depends_on: 
+      - Volume_4
+      - RouterInterface_1
+      - Port_4
+    properties: 
+      name: TopoFuzzer
+      flavor: { get_param: flavor }
+      block_device_mapping: [{ device_name: "vda", volume_id: { get_resource: Volume_4 }, delete_on_termination: "true" }]
+      availability_zone: nova
+      key_name: { get_param: key_name}
+      networks: 
+        - port: { get_resource: Port_4}
+#----------------------------------------------------------------------------------------------------------------
+#--- Create isolated private network
+  Net_1: 
+    type: "OS::Neutron::Net"
+    properties: 
+      admin_state_up: true
+      name: "MTD_Test-net"
+  Subnet_1: 
+    depends_on: 
+      - Net_1
+    type: "OS::Neutron::Subnet"
+    properties: 
+#      allocation_pools: 
+#        - start: "192.168.0.10"
+#          end: "192.168.0.200"
+      dns_nameservers: 
+        - "8.8.8.8"
+        - "8.8.4.4"
+      name: "MTD_test-subnet"
+      ip_version: 4
+      cidr: "192.168.3.0/16"
+      gateway_ip: "192.168.3.1"
+      enable_dhcp: true
+      network: {get_resource: Net_1}
+  Router_1: 
+    type: "OS::Neutron::Router"
+    properties: 
+      external_gateway_info: 
+        network: { get_param: public_net }
+      admin_state_up: true
+      name: "MTD_test-router"
+  RouterInterface_1: 
+    depends_on: 
+      - Router_1
+      - Subnet_1
+    type: "OS::Neutron::RouterInterface"
+    properties: 
+      router_id: { get_resource: Router_1 }
+      subnet_id: { get_resource: Subnet_1 }
+
+#----------------------------------------------------------------------------------------------------------------
+#--- Create ports
+  Port_1:
+    depends_on:
+    - RouterInterface_1
+    type: OS::Neutron::Port
+    properties:
+      name: Port_1
+      network_id: { get_resource: Net_1 }
+      fixed_ips:
+        - ip_address: "192.168.0.10"
+      security_groups:
+        - "default"
+        - { get_resource: SecurityGroup_1 }
+        - { get_resource: SecurityGroup_2 }
+        - { get_resource: SecurityGroup_3 }
+  Port_2:
+    type: OS::Neutron::Port
+    properties:
+      name: Port_2
+      network_id: { get_resource: Net_1 }
+      fixed_ips:
+        - ip_address: "192.168.0.11"
+      security_groups:
+        - "default"
+        - { get_resource: SecurityGroup_1 }
+        - { get_resource: SecurityGroup_2 }
+        - { get_resource: SecurityGroup_3 }
+  Port_3:
+    type: OS::Neutron::Port
+    properties:
+      name: Port_3
+      network_id: { get_resource: Net_1 }
+      fixed_ips:
+        - ip_address: "192.168.0.12"
+      security_groups:
+        - "default"
+        - { get_resource: SecurityGroup_1 }
+        - { get_resource: SecurityGroup_2 }
+        - { get_resource: SecurityGroup_3 }
+  Port_4:
+    type: OS::Neutron::Port
+    properties:
+      name: Port_4
+      network_id: { get_resource: Net_1 }
+      fixed_ips:
+        - ip_address: "192.168.0.20"
+      security_groups:
+        - "default"
+        - { get_resource: SecurityGroup_1 }
+        - { get_resource: SecurityGroup_2 }
+        - { get_resource: SecurityGroup_3 }
+
+#----------------------------------------------------------------------------------------------------------------
+#--- Create security groups
+  SecurityGroup_1: 
+    type: "OS::Neutron::SecurityGroup"
+    properties: 
+      rules: 
+        - direction: ingress
+          ethertype: IPv4
+          protocol: tcp
+          remote_mode: remote_ip_prefix
+          port_range_min: 22
+          port_range_max: 22
+          remote_ip_prefix: "0.0.0.0/0"
+      name: ssh
+      description: "\"Allow ssh connection\""
+  SecurityGroup_2: 
+    type: "OS::Neutron::SecurityGroup"
+    properties: 
+      rules: 
+        - direction: ingress
+          ethertype: IPv4
+          protocol: tcp
+          remote_mode: remote_ip_prefix
+          port_range_min: 111
+          port_range_max: 111
+          remote_ip_prefix: "0.0.0.0/0"
+        - direction: ingress
+          ethertype: IPv4
+          protocol: tcp
+          remote_mode: remote_ip_prefix
+          port_range_min: 2049
+          port_range_max: 2049
+          remote_ip_prefix: "0.0.0.0/0"
+        - direction: ingress
+          ethertype: IPv4
+          protocol: udp
+          remote_mode: remote_ip_prefix
+          remote_ip_prefix: "0.0.0.0/0"
+          port_range_min: 40000
+          port_range_max: 60000
+      name: nfs
+      description: "\"Allow traffic for NFS protocol to share files between different VMs\""
+  SecurityGroup_3: 
+    type: "OS::Neutron::SecurityGroup"
+    properties: 
+      rules: 
+        - direction: ingress
+          ethertype: IPv4
+          protocol: icmp
+          remote_mode: remote_ip_prefix
+          remote_ip_prefix: "0.0.0.0/0"
+      name: ping
+  SecurityGroup_4: 
+    type: "OS::Neutron::SecurityGroup"
+    properties: 
+      rules: 
+        - direction: ingress
+          ethertype: IPv4
+          #protocol: any
+          remote_mode: remote_ip_prefix
+          remote_ip_prefix: "0.0.0.0/0"
+        #- direction: ingress
+        #  ethertype: IPv4
+        #  protocol: udp
+        #  remote_mode: remote_ip_prefix
+        #  remote_ip_prefix: "0.0.0.0/0"
+        #- direction: ingress
+        #  ethertype: IPv6
+        #  protocol: tcp
+        #  remote_mode: remote_ip_prefix
+        #  remote_ip_prefix: "::/0"
+        - direction: ingress
+          ethertype: IPv6
+          #protocol: any
+          remote_mode: remote_ip_prefix
+          remote_ip_prefix: "::/0"
+      name: godmode
+      description: "Can be assigned to a vm if all incoming tcp and udp traffic should be allowed"

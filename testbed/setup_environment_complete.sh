@@ -11,7 +11,7 @@ else
         exit 0
 fi
 
-wget -O - https://raw.githubusercontent.com/Minninnewah/MiCoMTD/main/testbed/setup_environment_basic_2.sh | bash
+wget -O - https://raw.githubusercontent.com/Minninnewah/MiCoMTD/main/testbed/setup_environment_basic.sh | bash
 
 
 if [  $role == "m"  ]; then
