@@ -4,7 +4,7 @@ Set up kubernetes nodes (cluster) accordingly to the [podmigration-operator repo
 ssh-keygen -R 160.85.253.79
 
 2. ssh connection
-ssh ubuntu@<ip> -i <pathToKeyFile>
+ssh ubuntu@<ip> -i \<pathToKeyFile\>
 
 
 Interactive script:
