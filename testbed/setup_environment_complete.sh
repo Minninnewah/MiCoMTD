@@ -4,7 +4,7 @@ if [  $role == "m"  ]; then
         read -p 'Local ip address range of the worker nodes to set up the nfs server (like 10.0.0.0/16): ' workerRange
 elif [ $role == "w" ]; then
         echo "Set up Worker node"
-        read -p 'Enter join command from master node (sudo kubeadm join ...): ' joinCommand
+        read -p 'Enter join command from master node (kubeadm join ...): ' joinCommand
         read -p 'Enter local ip of master node (like 10.0.0.34: ' masterIP
 else
         echo "Abort, Inacceptable selection"
@@ -20,7 +20,7 @@ if [  $role == "m"  ]; then
 elif [ $role == "w" ]; then
         echo "Worker specific setup"
         echo "Joint to master noder"
-        $joinCommand
+        sudo $joinCommand --ignore-preflight-errors=all # ingore error because preflight test are done with kubernetes 1.26 which does not suppport this containerd version
         wget -O - https://raw.githubusercontent.com/Minninnewah/MiCoMTD/main/testbed/setup_environment_worker.sh | bash /dev/stdin -h $masterIP
 fi
         
