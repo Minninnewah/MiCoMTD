@@ -1,13 +1,15 @@
 Set up kubernetes nodes (cluster) accordingly to the [podmigration-operator repository](https://github.com/SSU-DCN/podmigration-operator) with own containerd and containerd-cri version
+1. Setup OpenStack
+- 3 VMs (master + 2 wokers using Ubuntu 18.04)
+Easiest way is to apply the stack in your OpenStack environment ```OpenStack_MiCoMTD.yaml``` and aftwerwards add the floating IPs to the VMs
 
-1. (Remove old fingerporint)
+2. (Remove old fingerporint)
 ssh-keygen -R 160.85.253.79
 
-2. ssh connection
+3. ssh connection
 ssh ubuntu@<ip> -i \<pathToKeyFile\>
 
-
-Interactive script:
+4. Interactive script:
 ```
 bash <(wget -qO- https://raw.githubusercontent.com/Minninnewah/MiCoMTD/main/testbed/setup_environment_complete.sh )
 ```
