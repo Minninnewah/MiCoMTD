@@ -71,6 +71,20 @@ kubectl apply -f 2.yaml
   ```
   kubectl migrate video worker1
   ```
+## Testservices
+These testservice are standalone services that simulate the different types of services accessible through the nodeport.
+Stateless (port: 30004)
+```
+kubectl apply -f https://raw.githubusercontent.com/Minninnewah/adros_microservice_edge_testbed/main/services/test_service_stateless/simple_stateless.yaml
+
+```
+
+Stateful - memory (port_ 30003
+```
+kubectl apply -f  https://raw.githubusercontent.com/Minninnewah/adros_microservice_edge_testbed/main/services/test_service_stateful/simple_stateful.yaml
+
+```
+
 
 ## Typical errors
 ### Check logs
