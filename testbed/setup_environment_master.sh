@@ -18,8 +18,9 @@ done
 
 source $HOME/.profile
 
+#ignore errors because of Kubernetes 1.26 which does not support this containerd version anymore but this version is used for the preflight tests.
 echo "Setup kubeadm"
-sudo kubeadm init --pod-network-cidr=10.244.0.0/16
+sudo kubeadm init --pod-network-cidr=10.244.0.0/16 --ignore-preflight-errors=all
 
 mkdir -p $HOME/.kube
 sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
