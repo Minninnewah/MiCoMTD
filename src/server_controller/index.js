@@ -69,13 +69,20 @@ const get_all_nodes = async () => {
     return nodes;
 }
 
-const get_all_pod_of_a_service = async (service) => {
+const is_service_running = async (service) => {
     const command = "get pods -o json --selector=app=" + service;
     let data = await execute_kubectl(command);
+    data = JSON.parse(data);
+
+    let state = true;
     data.items.forEach(item => {
-        console.log(item)
-        console.log(item.status)
+        if(item.kind === "Pod") {
+            if(item.status.phase !== "Running"){
+                state = false;
+            }
+        }
     })
+    return state;
 }
 
 async function get_nodes(req, res) {
@@ -163,12 +170,10 @@ async function start_service(req, res) {
 
 async function get_service_state(req, res) {
 
-    service = req.params.service
+    const service = req.params.service
+    const state = await is_service_running(service)
 
-    let command = "get deployments -o json --selector=app=" + service
-    execute_kubectl(command);
-
-    res.status(200).send();
+    res.status(200).json({isRunning: state});
 }
 
 app.get('/nodes', get_nodes);
@@ -177,10 +182,8 @@ app.get('/services', get_services);
 app.get('/restart/:service', restart_service)
 app.delete('/stop', stop_service)
 app.post('/start', start_service)
-app.post('/status/:service', get_service_state)
+app.get('/isRunning/:service', get_service_state)
 
 app.listen(PORT, HOST, () => {
     console.log(`Running on http://${HOST}:${PORT}`);
 });
-
-get_all_pod_of_a_service("simple-stateful")
