@@ -75,6 +75,10 @@ const is_service_running = async (service) => {
     data = JSON.parse(data);
 
     let state = true;
+    if (data.items.length == 0){
+        return false;
+    }
+    
     data.items.forEach(item => {
         if(item.kind === "Pod") {
             if(item.status.phase !== "Running"){
@@ -168,7 +172,7 @@ async function start_service(req, res) {
     res.status(200).send();
 }
 
-async function get_service_state(req, res) {
+async function get_service_status(req, res) {
 
     const service = req.params.service
     const state = await is_service_running(service)
@@ -182,7 +186,7 @@ app.get('/services', get_services);
 app.get('/restart/:service', restart_service)
 app.delete('/stop', stop_service)
 app.post('/start', start_service)
-app.get('/isRunning/:service', get_service_state)
+app.get('/status/:service', get_service_status)
 
 app.listen(PORT, HOST, () => {
     console.log(`Running on http://${HOST}:${PORT}`);
