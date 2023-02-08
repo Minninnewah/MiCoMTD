@@ -117,13 +117,16 @@ async function get_deployment_to_service (service) {
 }
 
 async function get_statefulSet_to_service (service) {
-    const command = "get statefulSet -o json --selector=app=" + service
+    const command = "get statefulSet -o json" // --selector=app=" + service
     let data = await execute_kubectl(command);
+
     let statefulSets = []
     data = JSON.parse(data);
 
     data.items.forEach(element => {
-        statefulSets.push(element.spec.selector.matchLabels.app)
+        if(element.spec.template.metadata.labels.app === service){
+            statefulSets.push(element.metadata.name)
+        }
     })
     return statefulSets;
 }
@@ -142,6 +145,7 @@ async function restart_service(req, res) {
     const service = req.params.service;
     const deployments = await get_deployment_to_service(service);
     const statefulSets = await get_statefulSet_to_service(service);
+    console.log(statefulSets)
 
     deployments.forEach(deployment => {
         restart_deployment(deployment);
