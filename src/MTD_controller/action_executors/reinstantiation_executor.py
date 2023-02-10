@@ -2,6 +2,7 @@ from .action_executor import ActionExecutor
 import environment
 import random
 from api.server_controller_handler import getServices, restartService
+import time
 
 
 class ReinstantiationExecutor(ActionExecutor):
@@ -23,6 +24,7 @@ class ReinstantiationExecutor(ActionExecutor):
 
     def execute(self):
         print("Reinstantiation Executor")
+        print(self.service)
 
         if self.service == "":
             print("No service selected")
@@ -36,6 +38,7 @@ class ReinstantiationExecutor(ActionExecutor):
                 server_controller_ips.append(ip)
 
         # Restart the service on all cluster
+        print("[" + time.ctime() + "] Restart the service on all clusters")
         for ip in server_controller_ips:
             restartService(ip, environment.Server_controller_port, self.service)
 
