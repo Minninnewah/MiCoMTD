@@ -8,7 +8,8 @@ class MigrationExecutor(ActionExecutor):
     def __init__(self):
         self.topoFuzzer_handler = TopoFuzzerHandler(environment.TopoFuzzer_IP, environment.TopoFuzzer_PORT)
         self.service = ""
-        pass
+        self.origin = list(environment.clusters.keys())[0]
+        self.destination = list(environment.clusters.keys())[1]
 
     def setup(self, service = "", origin = "", dest = ""):
         self.service = service
@@ -21,31 +22,34 @@ class MigrationExecutor(ActionExecutor):
         # How to handle yaml files? On each master predowloaded? stored in MTC controller, server controller?
         # How to handle depends on services?
 
-
         service_To_Migrate = "simple-stateless"
-        origin_cluster = "cluster_1"
-        dest_cluster = "cluster_2"
 
         stateless = True
 
         if(stateless):
             # start service at new location
-            print("Start service " + service_To_Migrate + " on cluster " + dest_cluster)
-            startService(environment.clusters[dest_cluster], environment.Server_controller_port, environment.service_manifests[service_To_Migrate])
+            print("[" + time.ctime() + "] Start service " + self.service + " on cluster " + self.destination)
+            startService(environment.clusters[self.destination], environment.Server_controller_port, environment.service_manifests[self.service])
 
-            while not getServiceState(environment.clusters[dest_cluster], environment.Server_controller_port, service_To_Migrate):
+            while not getServiceState(environment.clusters[self.destination], environment.Server_controller_port, self.service):
                 time.sleep(100/1000)
-                print(".", end = '')
+                print(".", end = '', flush=True)
 
-            print("Service started successfully")
+            print("")
+            print("[" + time.ctime() + "] Service started successfully")
             #change ip on topoFuzzer
+            print("Switch traffic from cluster " + self.origin + "(" + environment.clusters[self.origin] + ") to cluster " + self.destination + "(" + environment.clusters[self.destination] + ")" )
 
+
+            self.topoFuzzer_handler.update_public_mapping(environment.service_subnet_mapping[self.service], environment.local_ip[self.destination])
             #self.topoFuzzer_handler.update_service() #ToDo
             #results = topoFuzzer_handler.get_all_entries()
             # stop old service
-            #stopService(environment.clusters[origin_cluster], environment.Server_controller_port, service_To_Migrate)
+            #time.sleep(10)
+            stopService(environment.clusters[self.origin], environment.Server_controller_port, environment.service_manifests[self.service])
+        else:
+            print("Only stateless migration is supported.")
             
-        pass
 
     def isReady(self): 
         return not self.service == None and self.service == ""
