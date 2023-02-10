@@ -17,7 +17,7 @@ def getServices(ip, port):
     return data
 
 def startService(ip, port, manifest_url):
-    data = requests.delete('http://' + ip + ":" + str(port) + "/start", json={ "manifest_url": manifest_url })
+    data = requests.post('http://' + ip + ":" + str(port) + "/start", json={ "manifest_url": manifest_url })
     return data
 
 def stopService(ip, port, manifest_url):
@@ -25,6 +25,13 @@ def stopService(ip, port, manifest_url):
     return data
 
 def getServiceState(ip, port, service):
-    data = requests.get('http://' + ip + ":" + str(port) + "/status/" + service)
-    print(data)
-    return data.isRunning
+    data = requests.get('http://' + ip + ":" + str(port) + "/status/" + service).json()
+    return data["isRunning"]
+
+def getNodeMetrics(ip, port):
+    data = requests.get('http://' + ip + ":" + str(port) + "/metrics/nodes").json()
+    return data
+
+def getPodMetrics(ip, port):
+    data = requests.get('http://' + ip + ":" + str(port) + "/metrics/pods").json()
+    return data
