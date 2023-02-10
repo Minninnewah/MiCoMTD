@@ -12,6 +12,7 @@ app.use(express.urlencoded({ extended: true }));
 // Constants
 const PORT = 6666;
 const HOST = '0.0.0.0';
+const NAMESPACE = "default"
 
 const execute_kubectl = async (command) => {
 
@@ -145,7 +146,6 @@ async function restart_service(req, res) {
     const service = req.params.service;
     const deployments = await get_deployment_to_service(service);
     const statefulSets = await get_statefulSet_to_service(service);
-    console.log(statefulSets)
 
     deployments.forEach(deployment => {
         restart_deployment(deployment);
@@ -184,6 +184,50 @@ async function get_service_status(req, res) {
     res.status(200).json({isRunning: state});
 }
 
+async function get_metrics_nodes(req, res) {
+
+    const command = "get --raw /apis/metrics.k8s.io/v1beta1/nodes/"
+
+    let data = await execute_kubectl(command);
+    let metrics = []
+    data = JSON.parse(data);
+
+    data.items.forEach(element => {
+        console.log(element)
+        metrics.push({
+            name: element.metadata.name,
+            cpu: element.usage.cpu,
+            memory: element.usage.memory
+        })
+    })
+
+    res.status(200).json(metrics);
+}
+
+async function get_metrics_pods(req, res) {
+
+    const command = "get --raw /apis/metrics.k8s.io/v1beta1/pods/"
+
+    let data = await execute_kubectl(command);
+    let metrics = []
+    data = JSON.parse(data);
+
+    data.items.forEach(element => {
+        if(element.metadata.namespace === NAMESPACE) {
+
+            metrics.push({
+                name: element.metadata.name,
+                cpu: element.containers[0].usage.cpu,
+                memory: element.containers[0].usage.memory
+            })
+        }
+    })
+
+    res.status(200).json(metrics);
+}
+
+
+
 app.get('/nodes', get_nodes);
 app.get('/pods', get_pods);
 app.get('/services', get_services);
@@ -191,6 +235,8 @@ app.get('/restart/:service', restart_service)
 app.delete('/stop', stop_service)
 app.post('/start', start_service)
 app.get('/status/:service', get_service_status)
+app.get('/metrics/nodes', get_metrics_nodes)
+app.get('/metrics/pods', get_metrics_pods)
 
 app.listen(PORT, HOST, () => {
     console.log(`Running on http://${HOST}:${PORT}`);
