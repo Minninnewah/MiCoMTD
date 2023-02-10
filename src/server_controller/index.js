@@ -193,7 +193,6 @@ async function get_metrics_nodes(req, res) {
     data = JSON.parse(data);
 
     data.items.forEach(element => {
-        console.log(element)
         metrics.push({
             name: element.metadata.name,
             cpu: element.usage.cpu,
