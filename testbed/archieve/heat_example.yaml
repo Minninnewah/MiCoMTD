@@ -1,0 +1,505 @@
+heat_template_version: "2021-04-16"
+
+description: ---
+
+#----------------------------------------------------------------------------------------------------------------
+#--- Global definitions
+parameters:
+  key_name_mgmt:
+    type: string
+    default: "yubikey-murm"
+  key_name:
+    type: string
+    default: "k8s-tell"
+  image:
+    type: string
+    default: "jammy-ssd"
+  image_gpu:
+    type: string
+    default: "jammy-cuda-ssd"
+  flavor_ha:
+    type: string
+    default: "m1.small"
+  flavor_mgmt:
+    type: string
+    default: "m1.medium"
+  flavor_gpuwk:
+    type: string
+    default: "g1.xlarge.txpnew"
+  flavor_gpuwk2:
+    type: string
+    default: "g1.xlarge.txpold"  
+  public_net:
+    type: string
+    default: "external"
+  private_net_name:
+    type: string
+    default: "k8s"
+  private_net_cidr:
+    type: string
+    default: "192.168.0.0/24"
+  private_net_gateway:
+    type: string
+    default: "192.168.0.1"
+  private_net_pool_start:
+    type: string
+    default: "192.168.0.10"
+  private_net_pool_end:
+    type: string
+    default: "192.168.0.250"
+  nameserver_ip1:
+    type: string
+    default: "160.85.192.100"
+  nameserver_ip2:
+    type: string
+    default: "160.85.193.100"
+
+
+#----------------------------------------------------------------------------------------------------------------
+#--- Create isolated K8s private network
+resources:
+  private_net:
+    type: OS::Neutron::Net
+    properties:
+      name: { get_param: private_net_name }
+
+  private_subnet:
+    type: OS::Neutron::Subnet
+    depends_on: "private_net"
+    properties:
+      network_id: { get_resource: private_net }
+      dns_nameservers: [{ get_param: nameserver_ip1 }, { get_param: nameserver_ip2 }]
+      cidr: { get_param: private_net_cidr }
+      gateway_ip: { get_param: private_net_gateway }
+      allocation_pools:
+        - start: { get_param: private_net_pool_start }
+          end: { get_param: private_net_pool_end }
+
+  router:
+    depends_on: "private_subnet"
+    type: OS::Neutron::Router
+    properties:
+      external_gateway_info:
+        network: { get_param: public_net }
+
+  router_interface:
+    depends_on: 
+        - "router"
+        - "private_subnet"
+    type: OS::Neutron::RouterInterface
+    properties:
+      router_id: { get_resource: router }
+      subnet_id: { get_resource: private_subnet }
+
+#----------------------------------------------------------------------------------------------------------------
+#--- Create security groups
+
+  securitygroup_ICMP: 
+    type: "OS::Neutron::SecurityGroup"
+    properties: 
+      rules: 
+        - direction: ingress
+          ethertype: IPv4
+          protocol: icmp
+          remote_mode: remote_ip_prefix
+          remote_ip_prefix: "0.0.0.0/0"
+      name: "Allow ICMP"
+
+  securitygroup_SSH:
+    type: "OS::Neutron::SecurityGroup"
+    properties:
+      rules:
+        - direction: ingress
+          ethertype: IPv4
+          protocol: tcp
+          port_range_min: 22
+          port_range_max: 22
+          remote_mode: remote_ip_prefix
+          remote_ip_prefix: "0.0.0.0/0"
+      name: "Allow SSH"      
+
+  securitygroup_HTTP_HTTPS:
+    type: "OS::Neutron::SecurityGroup"
+    properties:
+      rules:
+        - direction: ingress
+          ethertype: IPv4
+          protocol: tcp
+          port_range_min: 80
+          port_range_max: 80
+          remote_mode: remote_ip_prefix
+          remote_ip_prefix: "0.0.0.0/0"
+        - direction: ingress
+          ethertype: IPv4
+          protocol: tcp
+          port_range_min: 443
+          port_range_max: 443
+          remote_mode: remote_ip_prefix
+          remote_ip_prefix: "0.0.0.0/0"
+      name: "Allow HTTP HTTPS"
+
+  securitygroup_K8sAPI:
+    type: "OS::Neutron::SecurityGroup"
+    properties:
+      rules:
+        - direction: ingress
+          ethertype: IPv4
+          protocol: tcp
+          port_range_min: 6443 
+          port_range_max: 6443
+          remote_mode: remote_ip_prefix
+          remote_ip_prefix: "0.0.0.0/0"
+      name: "Allow K8sAPI"
+
+#----------------------------------------------------------------------------------------------------------------
+#--- Create VRRP port
+  vrrp_port:
+    depends_on:
+    - "securitygroup_HTTP_HTTPS"
+    - "securitygroup_ICMP"
+    - "securitygroup_SSH"
+    - "router_interface"
+    type: OS::Neutron::Port
+    properties:
+      name: "ha-vrrp"
+      network_id: { get_resource: private_net }
+      fixed_ips:
+        - ip_address: "192.168.0.120"
+      port_security_enabled: true
+      security_groups:
+        - "default"
+
+  vrrp_floating_ip:
+    depends_on: "vrrp_port"
+    type: OS::Neutron::FloatingIP
+    properties:
+      floating_network: { get_param: public_net }
+      port_id: { get_resource: vrrp_port }       
+
+#----------------------------------------------------------------------------------------------------------------
+#--- Create management server
+  mgmt_boot_volume:
+    type: "OS::Cinder::Volume"
+    properties:
+      name: mgmt_boot_volume 
+      volume_type: SSD
+      image: { get_param: image }
+      size: 40
+
+  mgmt:
+    depends_on: 
+    - "mgmt_port"
+    - "mgmt_boot_volume"
+    type: OS::Nova::Server
+    properties:
+      name: kmgmt
+      flavor: { get_param: flavor_mgmt }
+      block_device_mapping: [{ device_name: "vda", volume_id: { get_resource: mgmt_boot_volume }, delete_on_termination: "false" }]
+      key_name: { get_param: key_name_mgmt }
+      networks:
+        - port: { get_resource: mgmt_port }
+
+  mgmt_port:
+    depends_on: 
+    - "securitygroup_ICMP"
+    - "securitygroup_SSH"
+    - "router_interface"
+    type: OS::Neutron::Port
+    properties:
+      network_id: { get_resource: private_net }
+      fixed_ips:
+        - ip_address: "192.168.0.100"
+      port_security_enabled: true
+      security_groups:
+        - "default"
+        - "Allow ICMP"
+        - "Allow SSH"
+        - "Allow HTTP HTTPS"
+
+  mgmt_floating_ip:
+    depends_on: "mgmt"
+    type: OS::Neutron::FloatingIP
+    properties:
+      floating_network: { get_param: public_net }
+      port_id: { get_resource: mgmt_port }
+
+#----------------------------------------------------------------------------------------------------------------
+#--- Create HAproxy / keepalived gateway server
+
+#--- ha-1
+  ha1_boot_volume:
+    type: "OS::Cinder::Volume"
+    properties:
+      name: ha1_boot_volume
+      volume_type: __DEFAULT__
+      image: { get_param: image }
+      size: 20
+  ha1:
+    depends_on:
+    - "ha1_port"
+    - "ha1_boot_volume"
+    type: OS::Nova::Server
+    properties:
+      name: ha-1
+      flavor: { get_param: flavor_ha }
+      block_device_mapping: [{ device_name: "vda", volume_id: { get_resource: ha1_boot_volume }, delete_on_termination: "false" }]
+      key_name: { get_param: key_name }
+      networks:
+        - port: { get_resource: ha1_port }
+
+  ha1_port:
+    depends_on:
+    - "router_interface"
+    - "vrrp_port"
+    type: OS::Neutron::Port
+    properties:
+      network_id: { get_resource: private_net }
+      fixed_ips:
+        - ip_address: "192.168.0.121"
+      allowed_address_pairs: [ { ip_address: { get_attr: [ vrrp_port, fixed_ips, 0, ip_address ] } } ]
+      port_security_enabled: true
+      security_groups:
+        - "default"
+        - "Allow ICMP"
+        - "Allow HTTP HTTPS"
+        - "Allow K8sAPI"
+
+#--- ha-2
+  ha2_boot_volume:
+    type: "OS::Cinder::Volume"
+    properties:
+      name: ha2_boot_volume
+      volume_type: __DEFAULT__
+      image: { get_param: image }
+      size: 20
+
+  ha2:
+    depends_on:
+    - "ha2_port"
+    - "ha2_boot_volume"
+    type: OS::Nova::Server
+    properties:
+      name: ha-2
+      flavor: { get_param: flavor_ha }
+      block_device_mapping: [{ device_name: "vda", volume_id: { get_resource: ha2_boot_volume }, delete_on_termination: "false" }]
+      key_name: { get_param: key_name }
+      networks:
+        - port: { get_resource: ha2_port }
+
+  ha2_port:
+    depends_on:
+    - "router_interface"
+    - "vrrp_port"
+    type: OS::Neutron::Port
+    properties:
+      network_id: { get_resource: private_net }
+      fixed_ips:
+        - ip_address: "192.168.0.122"
+      allowed_address_pairs: [ { ip_address: { get_attr: [ vrrp_port, fixed_ips, 0, ip_address ] } } ]
+      port_security_enabled: true
+      security_groups:
+        - "default"
+        - "Allow ICMP"
+        - "Allow HTTP HTTPS"
+        - "Allow K8sAPI"
+
+#----------------------------------------------------------------------------------------------------------------
+#--- Create GPU-Worker
+
+#--- gpu-1
+  gpu1_volume:
+    type: "OS::Cinder::Volume"
+    properties:
+      name: gpu1_bootvolume
+      volume_type: SSD
+      size: 120
+      image: { get_param: image_gpu}
+
+  gpu1:
+    depends_on:
+    - "gpu1_volume"
+    - "gpu1_port"
+    type: OS::Nova::Server
+    properties:
+      name: gpu-1
+      flavor: { get_param: flavor_gpuwk }
+      key_name: { get_param: key_name }
+      networks: [{ port: { get_resource: gpu1_port } }]
+      block_device_mapping: [{ device_name: "vda", volume_id: { get_resource: gpu1_volume }, delete_on_termination: "false" }]
+
+  gpu1_port:
+    depends_on:
+    - "router_interface"
+    type: OS::Neutron::Port
+    properties:
+      network_id: { get_resource: private_net }
+      fixed_ips:
+        - ip_address: "192.168.0.131"
+      port_security_enabled: true
+      security_groups:
+        - "default"
+
+#--- gpu-2
+  gpu2_volume:
+    type: "OS::Cinder::Volume"
+    properties:
+      name: gpu2_bootvolume
+      volume_type: SSD
+      size: 120
+      image: { get_param: image_gpu}
+
+  gpu2:
+    depends_on:
+    - "gpu2_volume"
+    - "gpu2_port"
+    type: OS::Nova::Server
+    properties:
+      name: gpu-2
+      flavor: { get_param: flavor_gpuwk }
+      key_name: { get_param: key_name }
+      networks: [{ port: { get_resource: gpu2_port } }]
+      block_device_mapping: [{ device_name: "vda", volume_id: { get_resource: gpu2_volume }, delete_on_termination: "false" }]
+
+  gpu2_port:
+    depends_on:
+    - "router_interface"
+    type: OS::Neutron::Port
+    properties:
+      network_id: { get_resource: private_net }
+      fixed_ips:
+        - ip_address: "192.168.0.132"
+      port_security_enabled: true
+      security_groups:
+        - "default"
+
+#--- gpu-3
+  gpu3_volume:
+    type: "OS::Cinder::Volume"
+    properties:
+      name: gpu3_bootvolume
+      volume_type: SSD
+      size: 120
+      image: { get_param: image_gpu}
+
+  gpu3:
+    depends_on:
+    - "gpu3_volume"
+    - "gpu3_port"
+    type: OS::Nova::Server
+    properties:
+      name: gpu-3
+      flavor: { get_param: flavor_gpuwk }
+      key_name: { get_param: key_name }
+      networks: [{ port: { get_resource: gpu3_port } }]
+      block_device_mapping: [{ device_name: "vda", volume_id: { get_resource: gpu3_volume }, delete_on_termination: "false" }]
+
+  gpu3_port:
+    depends_on:
+    - "router_interface"
+    type: OS::Neutron::Port
+    properties:
+      network_id: { get_resource: private_net }
+      fixed_ips:
+        - ip_address: "192.168.0.133"
+      port_security_enabled: true
+      security_groups:
+        - "default"
+
+#--- gpu-4
+  gpu4_volume:
+    type: "OS::Cinder::Volume"
+    properties:
+      name: gpu4_bootvolume
+      volume_type: SSD
+      size: 120
+      image: { get_param: image_gpu}
+
+  gpu4:
+    depends_on:
+    - "gpu4_volume"
+    - "gpu4_port"
+    type: OS::Nova::Server
+    properties:
+      name: gpu-4
+      flavor: { get_param: flavor_gpuwk2 }
+      key_name: { get_param: key_name }
+      networks: [{ port: { get_resource: gpu4_port } }]
+      block_device_mapping: [{ device_name: "vda", volume_id: { get_resource: gpu4_volume }, delete_on_termination: "false" }]
+
+  gpu4_port:
+    depends_on:
+    - "router_interface"
+    type: OS::Neutron::Port
+    properties:
+      network_id: { get_resource: private_net }
+      fixed_ips:
+        - ip_address: "192.168.0.134"
+      port_security_enabled: true
+      security_groups:
+        - "default"
+
+#--- gpu-5
+  gpu5_volume:
+    type: "OS::Cinder::Volume"
+    properties:
+      name: gpu5_bootvolume
+      volume_type: SSD
+      size: 120
+      image: { get_param: image_gpu}
+
+  gpu5:
+    depends_on:
+    - "gpu5_volume"
+    - "gpu5_port"
+    type: OS::Nova::Server
+    properties:
+      name: gpu-5
+      flavor: { get_param: flavor_gpuwk2 }
+      key_name: { get_param: key_name }
+      networks: [{ port: { get_resource: gpu5_port } }]
+      block_device_mapping: [{ device_name: "vda", volume_id: { get_resource: gpu5_volume }, delete_on_termination: "false" }]
+
+  gpu5_port:
+    depends_on:
+    - "router_interface"
+    type: OS::Neutron::Port
+    properties:
+      network_id: { get_resource: private_net }
+      fixed_ips:
+        - ip_address: "192.168.0.135"
+      port_security_enabled: true
+      security_groups:
+        - "default"
+
+#--- gpu-6
+  gpu6_volume:
+    type: "OS::Cinder::Volume"
+    properties:
+      name: gpu6_bootvolume
+      volume_type: SSD
+      size: 120
+      image: { get_param: image_gpu}
+
+  gpu6:
+    depends_on:
+    - "gpu6_volume"
+    - "gpu6_port"
+    type: OS::Nova::Server
+    properties:
+      name: gpu-6
+      flavor: { get_param: flavor_gpuwk2 }
+      key_name: { get_param: key_name }
+      networks: [{ port: { get_resource: gpu6_port } }]
+      block_device_mapping: [{ device_name: "vda", volume_id: { get_resource: gpu6_volume }, delete_on_termination: "false" }]
+
+  gpu6_port:
+    depends_on:
+    - "router_interface"
+    type: OS::Neutron::Port
+    properties:
+      network_id: { get_resource: private_net }
+      fixed_ips:
+        - ip_address: "192.168.0.136"
+      port_security_enabled: true
+      security_groups:
+        - "default"

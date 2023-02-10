@@ -1,0 +1,67 @@
+heat_template_version: "2021-04-16"
+
+description: setup for Openstack environment
+
+#----------------------------------------------------------------------------------------------------------------
+#--- Global definitions
+parameters:
+  key_name:
+    type: string
+    default: "ssh_connection_apu"
+  image:
+    type: string
+    default: "2022-12_Ubuntu_Jammy_with_Docker"
+  flavor_mgmt:
+    type: string
+    default: "m1.medium"
+
+
+resources:
+#----------------------------------------------------------------------------------------------------------------
+#--- Create security groups
+  securitygroup_SSH:
+      type: "OS::Neutron::SecurityGroup"
+      properties:
+        rules:
+          - direction: ingress
+            ethertype: IPv4
+            protocol: tcp
+            port_range_min: 22
+            port_range_max: 22
+            remote_mode: remote_ip_prefix
+            remote_ip_prefix: "0.0.0.0/0"
+        name: "Allow SSH"  
+
+#----------------------------------------------------------------------------------------------------------------
+#--- Create Volumes
+  mgmt_boot_volume:
+    type: "OS::Cinder::Volume"
+    properties:
+      name: mgmt_boot_volume 
+      image: {get_param: image}
+      size: 40
+#----------------------------------------------------------------------------------------------------------------
+#--- Create Virtual Machines
+#  mgmt:
+#    depends_on: 
+#    - "mgmt_boot_volume"
+#    type: OS::Nova::Server
+#    properties:
+#      name: kmgmt
+#      flavor: { get_param: flavor_mgmt }
+#      block_device_mapping: [{ device_name: "vda", volume_id: { get_resource: mgmt_boot_volume }, delete_on_termination: "true" }]
+#      key_name: { get_param: key_name }
+
+  Server_1: 
+      depends_on: 
+      - "mgmt_boot_volume"
+      type: "OS::Nova::Server"
+      properties: 
+        networks: 
+          - subnet: "a88b1456-122e-43ff-aea9-add0b72e0483"
+        name: Master
+        flavor: "m1.medium"
+        image: "db3190a6-f953-49d1-93c8-0960ceaae784"
+        availability_zone: nova
+        key_name: ssh_connection_apu
+        block_device_mapping: [{ device_name: "vda", volume_id: { get_resource: mgmt_boot_volume }, delete_on_termination: "true" }]
