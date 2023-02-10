@@ -17,6 +17,8 @@ wget -O - https://raw.githubusercontent.com/Minninnewah/MiCoMTD/main/testbed/set
 if [  $role == "m"  ]; then
         echo "Master specific setup"
         wget -O - https://raw.githubusercontent.com/Minninnewah/MiCoMTD/main/testbed/setup_environment_master.sh | bash /dev/stdin -r $workerRange
+        wget -O - https://raw.githubusercontent.com/Minninnewah/MiCoMTD/main/testbed/setup_openvpn.sh | bash
+        wget -O - https://raw.githubusercontent.com/Minninnewah/MiCoMTD/main/testbed/setup_server_controller.sh | bash
 elif [ $role == "w" ]; then
         echo "Worker specific setup"
         echo "Joint to master noder"
