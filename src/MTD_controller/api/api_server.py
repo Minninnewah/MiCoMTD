@@ -3,6 +3,7 @@ from enums.scheduler_mode import SchedulerMode
 from enums.mtd_action import MTDAction
 from enums.http_status_code import StatusCode
 from threading import Thread, Event
+import environment
 
 
 api = Flask(__name__)
@@ -58,13 +59,32 @@ def set_manual_action ():
         return __generate_error_response(f"Only {MTDAction.get_list()} allowed")
     
     action = MTDAction[req.json[param]]
-    scheduler.set_manuel_MTD_action(action)
 
     if action == MTDAction.REINSTANTIATION:
         param = "service"
         if __check_req_json_param(req, param):
             action.value.setup(req.json[param])
+        else:
+            return __generate_error_response(f"'service' param missing")
+    
+    elif action == MTDAction.MIGRATION:
+        param_service = "service"
+        param_origin = "origin"
+        param_destination = "destination"
 
+        if __check_req_json_param(req, param_service) and __check_req_json_param(req, param_origin) and __check_req_json_param(req, param_destination):
+            if(not __check_param_value(req, param_service, list(environment.service_manifests.keys()))):
+                return __generate_error_response(f"Only {list(environment.service_manifests.keys())} allowed for service")
+            if(not __check_param_value(req, param_origin, list(environment.clusters.keys()))):
+                return __generate_error_response(f"Only {list(environment.clusters.keys())} allowed for origin")
+            if(not __check_param_value(req, param_destination, list(environment.clusters.keys()))):
+                return __generate_error_response(f"Only {list(environment.clusters.keys())} allowed for destination")
+
+            action.value.setup(req.json[param_service], req.json[param_origin], req.json[param_destination])
+        else:
+            return __generate_error_response(f"'service', 'origin' or 'destination' param missing")
+    
+    scheduler.set_manuel_MTD_action(action)
     return __generate_json_response({}, StatusCode.CREATED)
 
 @api.route('/actions', methods=['get'])
