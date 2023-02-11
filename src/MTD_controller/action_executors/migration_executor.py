@@ -1,5 +1,5 @@
 from .action_executor import ActionExecutor
-from api.server_controller_handler import startService, stopService, getServiceState
+from api.server_controller_handler import startService, stopService, getServiceState, migrateService
 import environment
 from api.topofuzzer_handler import TopoFuzzerHandler
 import time
@@ -24,7 +24,7 @@ class MigrationExecutor(ActionExecutor):
 
         service_To_Migrate = "simple-stateless"
 
-        stateless = True
+        stateless = self.origin != self.destination
 
         if(stateless):
             # start service at new location
@@ -48,7 +48,9 @@ class MigrationExecutor(ActionExecutor):
             #time.sleep(10)
             stopService(environment.clusters[self.origin], environment.Server_controller_port, environment.service_manifests[self.service])
         else:
-            print("Only stateless migration is supported.")
+            fixedDestinationNode = "worker-2"
+            print("[" + time.ctime() + "] Start migration ")
+            migrateService(environment.clusters[self.origin], environment.Server_controller_port, self.service, fixedDestinationNode)
             
 
     def isReady(self): 
