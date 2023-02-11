@@ -11,18 +11,26 @@ if __name__ == "__main__":
     counter = 10
     test = pd.Series()
 
-    while True:
+    services_port_connection = {
+        "stateless": "30004",
+        "stateful_volume": "30005",
+        "stateful_memory": "30003"
+    }
+
+    current_test_service = "stateful_memory"
+
+    for i in range(60*1):
         
         timestamp = time.ctime()
-        #response = requests.get('http://10.161.7.123:30004')
-        response = requests.get('http://google.com')
-        
-        if response.status_code == 200:
+        try:
+            response = requests.get('http://10.161.7.123:' + services_port_connection[current_test_service])
             latency[timestamp] = response.elapsed.total_seconds()
-        else:
+        except:
             latency[timestamp] = None
 
-        if counter >= 5:
+        
+
+        if counter >= 2:
             for cluster in environment.clusters:
                 node_data = getNodeMetrics(environment.clusters[cluster], environment.Server_controller_port)
                 pod_data = getPodMetrics(environment.clusters[cluster], environment.Server_controller_port)
@@ -46,20 +54,20 @@ if __name__ == "__main__":
                         pod_metrics[data["name"] + "_memory"] = pd.Series({timestamp: data["memory"]}, name=data["name"] + "_memory")
             counter = 0
         
-        time.sleep(1 - time.time() % 1)
+        time.sleep(2 - time.time() % 2)
         
 
 
         counter += 1
-        print(node_metrics["master_cpu"].head(3))
-        combined_metrics = pd.DataFrame(pd.Series(latency, name="Latency"))
-        for metrics in node_metrics:
-            combined_metrics = pd.concat([combined_metrics, node_metrics[metrics]], axis=1)
 
-        for metrics in pod_metrics:
-            combined_metrics = pd.concat([combined_metrics, pod_metrics[metrics]], axis=1)
-        
-        combined_metrics.to_csv("test.csv")
-        print(combined_metrics.head(3))
-        #series = pd.Series(latency, name="Latency")
-        #print(pd.DataFrame(series))
+    combined_metrics = pd.DataFrame(pd.Series(latency, name="Latency"))
+    for metrics in node_metrics:
+        combined_metrics = pd.concat([combined_metrics, node_metrics[metrics]], axis=1)
+
+    for metrics in pod_metrics:
+        combined_metrics = pd.concat([combined_metrics, pod_metrics[metrics]], axis=1)
+    
+    combined_metrics.to_csv("test.csv")
+    #print(combined_metrics.head(3))
+    #series = pd.Series(latency, name="Latency")
+    #print(pd.DataFrame(series))

@@ -35,3 +35,7 @@ def getNodeMetrics(ip, port):
 def getPodMetrics(ip, port):
     data = requests.get('http://' + ip + ":" + str(port) + "/metrics/pods").json()
     return data
+
+def migrateService(ip, port, service, dest_node):
+    data = requests.put('http://' + ip + ":" + str(port) + "/migrate/" + service, json={ "destinationNode": dest_node })
+    return data

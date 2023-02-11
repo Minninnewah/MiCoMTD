@@ -57,7 +57,6 @@ const get_all_nodes = async () => {
         //Perhaps this changes with nodeport services
         let ip = "";
         element.status.addresses.forEach(address => {
-            console.log(address)
             if(address.type == "InternalIP") {
                 ip = address.address
             }
@@ -115,6 +114,18 @@ async function get_deployment_to_service (service) {
         deployments.push(element.spec.selector.matchLabels.app)
     })
     return deployments;
+}
+
+async function get_pod_to_service (service) {
+    const command = "get pod -o json --selector=app=" + service
+    let data = await execute_kubectl(command);
+    let pods = []
+    data = JSON.parse(data);
+
+    data.items.forEach(element => {
+        pods.push(element.metadata.name)
+    })
+    return pods;
 }
 
 async function get_statefulSet_to_service (service) {
@@ -213,16 +224,32 @@ async function get_metrics_pods(req, res) {
 
     data.items.forEach(element => {
         if(element.metadata.namespace === NAMESPACE) {
-
-            metrics.push({
-                name: element.metadata.name,
-                cpu: element.containers[0].usage.cpu,
-                memory: element.containers[0].usage.memory
-            })
+            if(element.containers.length > 0) {
+                metrics.push({
+                    name: element.metadata.name,
+                    cpu: element.containers[0].usage.cpu,
+                    memory: element.containers[0].usage.memory
+                })
+            }
         }
     })
 
     res.status(200).json(metrics);
+}
+
+async function migrate_service(req, res) {
+
+    const service = req.params.service;
+    const dest_node = req.body.destinationNode;
+
+    const pods = await get_pod_to_service(service);
+
+    pods.forEach(pod => {
+        let command = "migrate " + pod + " " + dest_node;
+        execute_kubectl(command);
+    })
+
+    res.status(200).send();
 }
 
 
@@ -236,6 +263,7 @@ app.post('/start', start_service)
 app.get('/status/:service', get_service_status)
 app.get('/metrics/nodes', get_metrics_nodes)
 app.get('/metrics/pods', get_metrics_pods)
+app.put('/migrate/:service', migrate_service)
 
 app.listen(PORT, HOST, () => {
     console.log(`Running on http://${HOST}:${PORT}`);
