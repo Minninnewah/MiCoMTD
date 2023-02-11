@@ -22,8 +22,6 @@ class MigrationExecutor(ActionExecutor):
         # How to handle yaml files? On each master predowloaded? stored in MTC controller, server controller?
         # How to handle depends on services?
 
-        service_To_Migrate = "simple-stateless"
-
         stateless = self.origin != self.destination
 
         if(stateless):
