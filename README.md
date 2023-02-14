@@ -26,7 +26,11 @@ The MTC coordinator is responsible for scheduling and controlling of the MTD act
 ### Run
 #### Activate virtual environement
 
-Activate env
+Create venv
+```
+.python3 -m venv venv
+```
+Activate venv
 ```
 .\venv\Scripts\activate
 ```
@@ -44,7 +48,7 @@ Since the code for the MTD coordinator is configured for our test environment th
 
 #### Run code
 ```
-python ./src/MTD_controller/mtd_controller.py
+python ./src/MTD_coodinator/mtd_controller.py
 ```
 
 ### API
