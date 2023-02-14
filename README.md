@@ -25,10 +25,6 @@ The MTC coordinator is responsible for scheduling and controlling of the MTD act
 
 ### Run
 #### Activate virtual environement
-Setup env
-```
-ToDo
-```
 
 Activate env
 ```
@@ -36,7 +32,7 @@ Activate env
 ```
 Install dependencies
 ```
-ToDo
+pip3 install -r .\requirements.txt
 ```
 
 #### Adapt code
@@ -52,6 +48,11 @@ python ./src/MTD_controller/mtd_controller.py
 ```
 
 ### API
-ToDo
+| Type | Path    | Body params                                     | Description                         |
+|------|---------|-------------------------------------------------|-------------------------------------|
+| get  | /mode   |                                                 | Returns the current scheduling mode |
+| put  | /mode   | mode                                            | Set the scheduling mode             |
+| post | /action | action, service and also (origin]) (destiantion)| Set MTD action                      |
+| get  | /action |                                                 | Return all the supported actions    |
 
-
+When posting a new action the parameter in () depends on the selected action parameter.
